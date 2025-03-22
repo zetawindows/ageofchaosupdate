@@ -1,0 +1,27 @@
+//================================================================//
+//	Happy Hour Script
+//	Created by PottScilgrim
+//================================================================//
+-	script	HappyHourScript	-1,{ 
+
+//================================================================//
+//	Hourly Triggers
+//================================================================//
+OnClock0800:
+OnClock1700:
+	setbattleflag "base_exp_rate",600,true;
+	setbattleflag "job_exp_rate",600,true;
+	setbattleflag "item_rate_equip",200,true;
+	setbattleflag "item_rate_card",200,true;
+	announce "[EVENT]: Happy hour has now begun, exp rates are now 6x Drop Rates are Doubled!",bc_all,0xc4ff5e;
+	end;
+
+OnClock1100:
+OnClock2000:
+	setbattleflag "base_exp_rate",300,true;
+	setbattleflag "job_exp_rate",300,true;
+	setbattleflag "item_rate_equip",100,true;
+	setbattleflag "item_rate_card",100,true;
+	announce "[EVENT]: Happy hour has ended, exp rates have returned to normal",bc_all,0xc4ff5e;
+	end;
+}

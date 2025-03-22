@@ -1,0 +1,35 @@
+veil,119,148,5	script	Zeny & Cash Rank	990,{
+switch(select("Zeny:Cash")){
+	case 1:
+		query_sql("SELECT `c`.`name`, `c`.`class`, `c`.`base_level`, `c`.`job_level`, `c`.`zeny`, `g`.`name` FROM `char` c LEFT JOIN (`guild` g) ON (`c`.`guild_id` = `g`.`guild_id`) ORDER BY `c`.`zeny` DESC LIMIT 10", .@name$, .@class, .@blvl, .@jlvl, .@zeny, .@guild$);	
+		for (.@i = 0; .@i < getarraysize(.@name$); .@i++) {
+		.@menu$ = (("" == .@menu$) ? "Top " + (.@i + 1) + " - " + .@name$[.@i] : .@menu$ + ":Top " + (.@i + 1) + " - " + .@name$[.@i]);
+		}
+		mes "[Zeny Ranking]";
+		mes "Which character do you want to see details about?";
+		.@selected = select(.@menu$);
+		next;
+		mes "Name: " + .@name$[.@selected - 1];
+		mes "Class: " + jobname(.@class[.@selected - 1]);
+		mes "Base level: " + .@blvl[.@selected - 1];
+		mes "Job level: " + .@jlvl[.@selected - 1];
+		mes "Guild: " + ((.@guild$[.@selected - 1]) ? .@guild$[.@selected - 1] : "none");
+		mes "Zeny: " + .@zeny[.@selected - 1];
+		end;
+	case 2:
+		query_sql "SELECT `char`.`name`, CAST(`value` AS UNSIGNED) FROM acc_reg_num " +
+		"LEFT JOIN `char` ON acc_reg_num.account_id=`char`.account_id " +
+		"WHERE acc_reg_num.`key`='#CASHPOINTS' GROUP BY `char`.account_id " +
+		"ORDER BY CAST(`value` AS UNSIGNED) DESC LIMIT 128",
+		.@name$, .@cash;
+		mes "[Top "+getarraysize(.@name$)+" Cash Points]";
+		for (set .@i,0; .@i<getarraysize(.@name$); set .@i,.@i+1)
+		mes (.@i+1) +". "+ .@name$[.@i] +" cash "+ .@cash[.@i];
+		close;
+	OnInit:
+		delwaitingroom;
+		waitingroom "Zeny & Cash Rank", 0;
+		end;
+		}
+
+}

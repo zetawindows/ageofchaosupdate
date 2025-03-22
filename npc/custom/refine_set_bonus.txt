@@ -1,0 +1,86 @@
+-	script	refine_bonus_set	-1,{
+OnPCRefineSetEvent:
+    set .i, 3;
+    while (.i <= 10) {
+        set .all_equips_refined, 
+            (getequipisequiped(EQI_ARMOR) && getequiprefinerycnt(EQI_ARMOR) == .i) &&
+            (getequipisequiped(EQI_HAND_R) && getequiprefinerycnt(EQI_HAND_R) == .i) &&
+            (getequipisequiped(EQI_GARMENT) && getequiprefinerycnt(EQI_GARMENT) == .i) &&
+            (getequipisequiped(EQI_SHOES) && getequiprefinerycnt(EQI_SHOES) == .i) &&
+            (getequipisequiped(EQI_HAND_L) && getequiprefinerycnt(EQI_HAND_L) == .i);
+
+        if (.all_equips_refined) {
+            if (.i == 3) { 
+                bonus2 bExpAddRace,RC_All,100;
+                bonus2 bDropAddRace,RC_All,100;
+                hateffect(HAT_EF_REF_GLOW_3, true); 
+                }
+            else if (.i == 4) { 
+                bonus2 bExpAddRace,RC_All,200;
+                bonus2 bDropAddRace,RC_All,100;
+                hateffect(HAT_EF_REF_GLOW_4, true); 
+                }
+            else if (.i == 5) { 
+                bonus2 bExpAddRace,RC_All,200;
+                bonus2 bDropAddRace,RC_All,200;
+                hateffect(HAT_EF_REF_GLOW_5, true); 
+                }
+            else if (.i == 6) { 
+                bonus2 bExpAddRace,RC_All,300;
+                bonus2 bDropAddRace,RC_All,200;
+                hateffect(HAT_EF_REF_GLOW_6, true); 
+                }
+            else if (.i == 7) { 
+                bonus2 bExpAddRace,RC_All,300;
+                bonus2 bDropAddRace,RC_All,300;
+                bonus bMaxHP,100;
+                bonus bMaxSP,100;
+                bonus bAddMaxWeight,1000;
+                hateffect(HAT_EF_REF_GLOW_7, true); 
+                }
+            else if (.i == 8) { 
+                bonus2 bExpAddRace,RC_All,300;
+                bonus2 bDropAddRace,RC_All,300;
+                bonus bMaxHP,100;
+                bonus bMaxSP,100;
+                bonus bAddMaxWeight,1000;
+                bonus bAtk,1;
+                bonus bMatk,1;
+                hateffect(HAT_EF_REF_GLOW_8, true); 
+                }
+            else if (.i == 9) { 
+                bonus2 bExpAddRace,RC_All,300;
+                bonus2 bDropAddRace,RC_All,300;
+                bonus bMaxHP,200;
+                bonus bMaxSP,200;
+                bonus bAddMaxWeight,2000;
+                bonus bAtk,2;
+                bonus bMatk,2;
+                hateffect(HAT_EF_REF_GLOW_9, true); 
+                }
+            else if (.i == 10) { 
+                bonus2 bExpAddRace,RC_All,300;
+                bonus2 bDropAddRace,RC_All,300;
+                bonus bMaxHP,300;
+                bonus bMaxSP,300;
+                bonus bAddMaxWeight,3000;
+                bonus bAtk,3;
+                bonus bMatk,3;
+                hateffect(HAT_EF_REF_GLOW_10, true); 
+                hateffect(HAT_EF_REF_GLOW_10_2, true); 
+                }
+        } else {
+            if (.i == 3) hateffect(HAT_EF_REF_GLOW_3, false);
+            else if (.i == 4) hateffect(HAT_EF_REF_GLOW_4, false);
+            else if (.i == 5) hateffect(HAT_EF_REF_GLOW_5, false);
+            else if (.i == 6) hateffect(HAT_EF_REF_GLOW_6, false);
+            else if (.i == 7) hateffect(HAT_EF_REF_GLOW_7, false);
+            else if (.i == 8) hateffect(HAT_EF_REF_GLOW_8, false);
+            else if (.i == 9) hateffect(HAT_EF_REF_GLOW_9, false);
+            else if (.i == 10) { hateffect(HAT_EF_REF_GLOW_10, false); hateffect(HAT_EF_REF_GLOW_10_2, false); }
+        }
+
+        set .i, .i + 1;
+    }
+    end;
+}

@@ -1,0 +1,9 @@
+-	script	Greet	-1,{
+end;
+OnPCLoginEvent:
+if(Class == Job_Novice && !BaseExp){
+announce "[System]Welcome "+strcharinfo(0)+" to Age Of Chaos have fun.",0;
+set BaseExp,1;
+}
+end;
+}

@@ -1,0 +1,131 @@
+//==== Gidz Scripts =============================================
+//= Map Information
+//===== By: =====================================================
+//= Gidz
+//===== Current Version: ========================================
+//= 1.0
+//===== Description: ============================================
+//= 2020 Client MapInfo Inspired
+//= For 2019 Clients and below
+//===== Changelog: ==============================================
+//= 1.0 Implementation
+//      - Supports all @go maps except @go 15 and 16
+//===============================================================
+
+-	script	Town Information	-1,{
+
+OnPCLoadMapEvent:
+	.@cutinmode = 1; // Set to 0 if you want to use the Text Type instead of Cutins
+
+	if(!.@cutinmode) {
+	if( strcharinfo(3) == "prontera" ) { announce "Prontera, Capital of the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "veil" ) { announce "Veil, Capital of the Rune-Market",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "morocc" ) { announce "Morocc, Dessert City in the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "geffen" ) { announce "Geffen, Magic City in the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "payon" ) { announce "Payon, Mountain City in the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "alberta" ) { announce "Alberta, Port City of the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "izlude" ) { announce "Izlude, Satellite City in the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "aldebaran" ) { announce "Aldebaran, Border City in the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "xmas" ) { announce "Lutie, Town of Eternal Christmas",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "comodo" ) { announce "Comodo, Beach Town in the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "yuno" ) {announce "Yuno, Capital of Schwartzvald Republic",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "amatsu" ) { announce "Amatsu, Land of Destiny",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "gonryun" ) { announce "Gonryun, Hermit Land (Kunlun)",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "umbala" ) { announce "Umbala, Wootan Tribe's Village",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "niflheim" ) { announce "Niflheim, Realm of the Dead",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "louyang" ) { announce "Louyang, known as the Castle of The Dragon",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "jawaii" ) { announce "Jawaii, Honeymoon Island",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "ayothaya" ) { announce "Ayothaya, City off the coast of the Rune-Midgarts Kingdom",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "einbroch" ) { announce "Einbroch, City of Steel in the Schwartzvald Republic",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "lighthalzen" ) { announce "Lighthalzen, City-State of Prosperity of the Schwartzvald Republic",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "einbech" ) { announce "Einbech, Mining Village in the Schwartzvald Republic",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "hugel" ) { announce "Hugel, Quaint Garden Village",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "rachel" ) { announce "Rachel, Capital of Arunafelz, the Study Nation",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "veins" ) { announce "Veins, Arunafeltz Canyon Village",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "moscovia" ) { announce "Moscovia, Small rustic town located on an island off the Rune-Midgarts",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "mid_camp" ) { announce "Midgard, Yotunheim Expedition Camp",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "manuk" ) { announce "Manuk, Yotunheim Sapha's Mining Village",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "splendide" ) { announce "Splendide, Yotunheim Lapine Base",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "brasilis" ) { announce "Brasilis, Where plants grow huge and the climate is somewhat tropical",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "dicastes01" ) { announce "El Dicastes, Jotunheim Sapha Capital",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "mora" ) { announce "Mora, Bifrost Raffle Village",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "dewata" ) { announce "Dewata, Island that has begun to accept and embrace the outside world",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "malangdo" ) { announce "Malangdo, Island in the shape of a cat paw",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "malaya" ) { announce "Malaya, small village you could reach by sailing southwest from Alberta",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "eclage" ) { announce "Eclage, Alfheim - Lapine Capital",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	if( strcharinfo(3) == "lasagna" ) { announce "Lasagna, Far-Star Continental Port Town",bc_self,0xFFFFFF,FW_NORMAL,14; end; }
+	}
+	if( strcharinfo(3) == "prontera" ) { cutin "Prontera",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "veil" ) { cutin "Veil",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "morocc" ) { cutin "Morocc",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "geffen" ) { cutin "Geffen",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "payon" ) { cutin "Payon",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "alberta" ) { cutin "Alberta",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "izlude" ) { cutin "Izlude",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "aldebaran" ) { cutin "Aldebaran",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "xmas" ) { cutin "Xmas",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "comodo" ) { cutin "Comodo",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "yuno" ) { cutin "Yuno",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "amatsu" ) { cutin "Amatsu",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "gonryun" ) { cutin "Gonryun",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "umbala" ) { cutin "Umbala",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "niflheim" ) { cutin "Niflheim",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "louyang" ) { cutin "Louyang",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "jawaii" ) { cutin "Jawaii",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "ayothaya" ) { cutin "Ayothaya",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "einbroch" ) { cutin "Einbroch",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "lighthalzen" ) { cutin "Lighthalzen",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "einbech" ) { cutin "Einbech",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "hugel" ) { cutin "Hugel",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "rachel" ) { cutin "Rachel",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "veins" ) { cutin "Veins",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "moscovia" ) { cutin "Moscovia",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "mid_camp" ) { cutin "Midcamp",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "manuk" ) { cutin "Manuk",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "splendide" ) { cutin "Splendide",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "brasilis" ) { cutin "Brasilis",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "dicastes01" ) { cutin "El_Dicastes",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "mora" ) { cutin "Mora",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "dewata" ) { cutin "dewata",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "malangdo" ) { cutin "Malangdo",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "malaya" ) { cutin "Malaya",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "eclage" ) { cutin "Eclage",1; sleep2 3000; cutin "",255; end; }
+	if( strcharinfo(3) == "lasagna" ) { cutin "Lasagna",1; sleep2 3000; cutin "",255; end; }
+}
+
+prontera	mapflag	loadevent
+veil	mapflag	loadevent
+morocc	mapflag	loadevent
+geffen	mapflag	loadevent
+payon	mapflag	loadevent
+alberta	mapflag	loadevent
+izlude	mapflag	loadevent
+aldebaran	mapflag	loadevent
+xmas	mapflag	loadevent
+comodo	mapflag	loadevent
+yuno	mapflag	loadevent
+amatsu	mapflag	loadevent
+gonryun	mapflag	loadevent
+umbala	mapflag	loadevent
+niflheim	mapflag	loadevent
+louyang	mapflag	loadevent
+jawaii	mapflag	loadevent
+ayothaya	mapflag	loadevent
+einbroch	mapflag	loadevent
+lighthalzen	mapflag	loadevent
+einbech	mapflag	loadevent
+hugel	mapflag	loadevent
+rachel	mapflag	loadevent
+veins	mapflag	loadevent
+moscovia	mapflag	loadevent
+mid_camp	mapflag	loadevent
+manuk	mapflag	loadevent
+splendide	mapflag	loadevent
+brasilis	mapflag	loadevent
+dicastes01	mapflag	loadevent
+mora	mapflag	loadevent
+dewata	mapflag	loadevent
+malangdo	mapflag	loadevent
+malaya	mapflag	loadevent
+eclage	mapflag	loadevent
+lasagna	mapflag	loadevent

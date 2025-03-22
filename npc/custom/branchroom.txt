@@ -1,0 +1,256 @@
+//===== rAthena Script =======================================
+//= Private MVP & Branch Room
+//===== By: ==================================================
+//= AnnieRuru
+//===== Current Version: =====================================
+//= 1.0
+//===== Compatible With: =====================================
+//= rAthena Project
+//===== Description: =========================================
+//= Allows players to rent an MVP room for personal use,
+//= or for a party or guild.
+//===== Additional Comments: =================================
+//= 1.0 First version, edited. [Euphy]
+//============================================================
+
+veil,120,132,5	script	DB Room Manager	4_F_RUSGREEN,{
+	mes "[^EFCC00 DB Room Manager ^000000]";
+	mes "How are thing with you?", " ";
+	mes "I offer Public of DB Room. Choose what best suits your need.";
+	switch(select("Public DB Room", "Cancel")) {
+		case 1:
+			.@room = select(
+				"Enter Room 1 ["+ getmapusers("06guild_01") +"]",
+				"Enter Room 2 ["+ getmapusers("06guild_02") +"]",
+				"Enter Room 3 ["+ getmapusers("06guild_03") +"]",
+				"Enter Room 4 ["+ getmapusers("06guild_04") +"]");
+			warp "06guild_0"+ .@room, 0,0;
+			end;
+		case 2:
+			clear;
+			mes "[^EFCC00 DB Room Manager ^000000]";
+			if ( getvariableofnpc( .rentcost, "DB Room Helper" ) )
+				mes "The cost to rent a room for "+ getvariableofnpc( .timeout, "DB Room Helper" ) +" minutes is "+ callfunc("F_InsertComma", getvariableofnpc( .rentcost, "DB Room Helper" ) ) +"z.";
+			else
+				mes "You can only use the room for only "+ getvariableofnpc( .timeout, "DB Room Helper" ) +" minutes.";
+			mes " ";
+			.@menu$ = "";
+			for ( .@i = 5; .@i <= 8; .@i++ ) {
+				if ( getvariableofnpc( .renttime[.@i], "DB Room Helper" ) ) {
+					//mes "Room #"+ .@i +" = "+ .color$[ .type[.@i] ] + .whoinuse$[.@i] +"^000000";
+					.@menu$ += "Enter Room " + .@i + " ["+ .color$[ .type[.@i] ] + .whoinuse$[.@i] +"^000000]:";
+				}
+				else
+					.@menu$ += "Rent Room " + .@i + ":";
+			}
+			next;
+			.@room = select(.@menu$)+4;
+			if ( getvariableofnpc( .renttime[.@room], "DB Room Helper" ) ) {
+				if ( .inuseid[.@room] == getcharid( .type[.@room] ) ) {
+					warp "06guild_0"+ .@room, 0,0;
+					close;
+				} else {
+					mes "[^EFCC00 DB Room Manager ^000000]";
+					mes "This room is reserved for ";
+					mes .color$[ .type[.@room] ] + .whoinuse$[.@room] +"^000000.";
+					mes "Please select another.";
+					close;
+				}
+			}
+			mes "[^EFCC00 DB Room Manager ^000000]";
+			mes "Reserve this room for...";
+			next;
+			.@type = select( "For my party members", "For my guild members", "For personal account use" );
+			if ( !getcharid(.@type) ) {
+				mes "[^EFCC00 DB Room Manager ^000000]";
+				mes "You do not own a "+( ( .@type == 1 )? "Party" : "Guild" )+".";
+				close;
+			}
+			else if ( Zeny < getvariableofnpc( .rentcost, "DB Room Helper" ) ) {
+				mes "You don't have enough zeny to rent a room.";
+				close;
+			}
+			else if ( getvariableofnpc( .renttime[.@room], "DB Room Helper" ) ) {
+				mes "[^EFCC00 DB Room Manager ^000000]";
+				mes "I'm sorry, somebody else has already registered this room faster than you.";
+				close;
+			}
+			for ( .@i = 1; .@i <= 8; .@i++ ) {
+				if ( ( getvariableofnpc( .renttime[.@i], "DB Room Helper" ) ) && .@type == .type[.@i] && getcharid(.@type) == .inuseid[.@i] ) {
+					mes "[^EFCC00 DB Room Manager ^000000]";
+					mes "You already rented Room#"+ .@i +". Use that room instead.";
+					close;
+				}
+			}
+			set .type[.@room], .@type;
+			set .inuseid[.@room], getcharid(.@type);
+			set .whoinuse$[.@room], strcharinfo( ( .@type == 3 )? 0 : .@type );
+			Zeny -= getvariableofnpc( .rentcost, "DB Room Helper" );
+			warp "06guild_0"+ .@room, 0,0;
+			killmonsterall "06guild_0"+ .@room;
+			donpcevent "Private DB Room Helper#"+ .@room +"::OnEnterMap";
+			close;
+		case 3:
+			close2;
+			callshop "DB_Room#branch", 1;
+			end;
+		case 4:
+			close;
+	}
+
+OnInit:
+	.color$[1] =  "^EE8800"; // party color
+	.color$[2] =  "^70CC11"; // guild color
+	.color$[3] =  "^0000FF"; // account color
+	end;
+}
+
+-	script	DB Room Helper	-1,{
+	if (.renttime[ atoi( strnpcinfo(2) ) ])
+		npctalk "Time left: " + callfunc( "Time2Str", .renttime[ atoi( strnpcinfo(2) ) ] + .timeout * 60 ),strnpcinfo(0),bc_self;
+	switch ( select(.menu$ + "Leave this room:" + (compare(strnpcinfo(1),"Private")?"Give up this room":"") ) ) {
+	case 1:
+		if ( mobcount( "this","" ) ) {
+			npctalk "I cannot offer heal service when there are monsters around.",strnpcinfo(0),bc_self;
+			end;
+		}
+		sc_end SC_STONE;
+		sc_end SC_SLOWDOWN;
+		sc_end SC_FREEZE;
+		sc_end SC_SLEEP;
+		sc_end SC_CURSE;
+		sc_end SC_SILENCE;
+		sc_end SC_CONFUSION;
+		sc_end SC_BLIND;
+		sc_end SC_BLEEDING;
+		sc_end SC_DECREASEAGI;
+		sc_end SC_POISON;
+		sc_end SC_HALLUCINATION;
+		sc_end SC_STRIPWEAPON;
+		sc_end SC_STRIPARMOR;
+		sc_end SC_STRIPHELM;
+		sc_end SC_STRIPSHIELD;
+		sc_end SC_CHANGEUNDEAD;
+		sc_end SC_ORCISH;
+		sc_end SC_BERSERK;
+		sc_end SC_SKE;
+		sc_end SC_SWOO;
+		sc_end SC_SKA;
+		percentheal 100,100;
+		specialeffect2 EF_HEAL;
+		npctalk "You are completely healed.",strnpcinfo(0),bc_self;
+		end;
+	case 2:
+		npctalk "Are you sure you want to leave this room?",strnpcinfo(0),bc_self;
+		if ( select( "No, stay here","Yes, leave now") == 2 )
+			warp .respawnmap$, .respawnx, .respawny;
+		end;
+	case 3:
+		if ( getmapusers( strcharinfo(3) ) > 1 ) {
+			npctalk "There are still some players in this room. Make sure you are the last member in this room to use this option.",strnpcinfo(0),bc_self;
+			end;
+		}
+		mes "[DB Room Helper]";
+		mes "Are you sure you want to give up this room?";
+		if ( .rentcost )
+			mes "You will need to pay again to enter this room.";
+		next;
+		if ( select( "Yes", "No" ) == 2 ) close;
+		awake strnpcinfo(0);
+		end;
+	}
+	close;
+
+OnEnterMap:
+	.@id = atoi( strnpcinfo(2) );
+	.renttime[.@id] = gettimetick(2);
+	sleep .timeout * 60000;
+	mapwarp strnpcinfo(4), .respawnmap$, .respawnx, .respawny;
+	.renttime[.@id] = 0;
+	killmonsterall strnpcinfo(4);
+	end;
+
+OnInit:
+	if ( !getstrlen( strnpcinfo(2) ) ) {
+
+//	Config ---------------------------------------------------------------------------------------
+
+	// Room rental time, in minutes.
+	// When time runs out, all players inside the room will be kicked out.
+	// Do NOT set this to zero!
+	.timeout = 60;
+
+	.rentcost = 0;	// Zeny cost for renting a room (0 = free)
+
+	//	Options setting inside the room
+	.@menu[1] = 0;	// Turn Heal option On/Off
+
+	// Respawn point when players leave the room
+	set .respawnmap$, "prontera";
+	set .respawnx, 150;
+	set .respawny, 174;
+
+
+//	Config Ends ------------------------------------------------------------------------
+
+		if ( !.timeout ) set .timeout, 60;
+		.menu$ = ( .@menu[1] ? "Heal" : "" ) +":" ;
+	}
+	else {
+		mapannounce strnpcinfo(4), "An administrator has refreshed the server. Please re-register this room.", bc_map;
+		mapwarp strnpcinfo(4), .respawnmap$, .respawnx, .respawny;
+	}
+	end;
+}
+
+-	shop	DB_Room#branch	-1,604:100000,12103:10000000
+
+06guild_01,49,49,4	duplicate(DB Room Helper)	DB Room Helper#1	4_F_RUSGREEN
+06guild_02,49,49,4	duplicate(DB Room Helper)	DB Room Helper#2	4_F_RUSGREEN
+06guild_03,49,49,4	duplicate(DB Room Helper)	DB Room Helper#3	4_F_RUSGREEN
+06guild_04,49,49,4	duplicate(DB Room Helper)	DB Room Helper#4	4_F_RUSGREEN
+06guild_05,49,49,4	duplicate(DB Room Helper)	Private DB Room Helper#5	4_F_RUSGREEN
+06guild_06,49,49,4	duplicate(DB Room Helper)	Private DB Room Helper#6	4_F_RUSGREEN
+06guild_07,49,49,4	duplicate(DB Room Helper)	Private DB Room Helper#7	4_F_RUSGREEN
+06guild_08,49,49,4	duplicate(DB Room Helper)	Private DB Room Helper#8	4_F_RUSGREEN
+
+06guild_01	mapflag	nowarpto
+06guild_02	mapflag	nowarpto
+06guild_03	mapflag	nowarpto
+06guild_04	mapflag	nowarpto
+06guild_05	mapflag	nowarpto
+06guild_06	mapflag	nowarpto
+06guild_07	mapflag	nowarpto
+06guild_08	mapflag	nowarpto
+06guild_01	mapflag	nomemo
+06guild_02	mapflag	nomemo
+06guild_03	mapflag	nomemo
+06guild_04	mapflag	nomemo
+06guild_05	mapflag	nomemo
+06guild_06	mapflag	nomemo
+06guild_07	mapflag	nomemo
+06guild_08	mapflag	nomemo
+06guild_01	mapflag	noteleport
+06guild_02	mapflag	noteleport
+06guild_03	mapflag	noteleport
+06guild_04	mapflag	noteleport
+06guild_05	mapflag	noteleport
+06guild_06	mapflag	noteleport
+06guild_07	mapflag	noteleport
+06guild_08	mapflag	noteleport
+06guild_01	mapflag	nosave	SavePoint
+06guild_02	mapflag	nosave	SavePoint
+06guild_03	mapflag	nosave	SavePoint
+06guild_04	mapflag	nosave	SavePoint
+06guild_05	mapflag	nosave	SavePoint
+06guild_06	mapflag	nosave	SavePoint
+06guild_07	mapflag	nosave	SavePoint
+06guild_08	mapflag	nosave	SavePoint
+06guild_01	mapflag	nopenalty
+06guild_02	mapflag	nopenalty
+06guild_03	mapflag	nopenalty
+06guild_04	mapflag	nopenalty
+06guild_05	mapflag	nopenalty
+06guild_06	mapflag	nopenalty
+06guild_07	mapflag	nopenalty
+06guild_08	mapflag	nopenalty

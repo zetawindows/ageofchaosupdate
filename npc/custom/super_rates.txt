@@ -1,0 +1,39 @@
+veil,125,107,5	script	Gigler	402,{
+if( .Duration > gettimetick(2) ){
+	mes "The 2X Rate is Running right now.";
+	close;
+}
+mes "Welcome :";
+mes "Would you like to contribute for double drop rate and experience?";
+mes "I need [Zeny] to modify the rates and share it to all players here.";
+next;
+mes "Total Zeny Gained :";
+mes "^FF0000"+.TotalZeny+"^000000 Zeny.";
+mes "Need "+.TargetZeny+" Zeny. To Activate the modified rates, would you like to share?";
+next;
+if( select("Donate Zeny:Cancel") == 1 ){
+mes "How many will be Donated ?";
+input .@Amount,0,Zeny;
+mes "Done,.. you have Donated "+.@Amount+" Zeny.";
+set Zeny,Zeny - .@Amount;
+set .TotalZeny,.TotalZeny + .@Amount;
+if( .TotalZeny >= .TargetZeny ){
+	set .TotalZeny,0;
+	set .Duration,gettimetick(2) + ( 1 * 60 );
+	announce "Rates already modified..[x2] drop rate[x2] exp. rate. for 1 hour, Please Re-Log to enjoy the double rates.",0;
+}
+}
+close;
+
+OnInit:
+set .TargetZeny,5000000;
+set .Rate,2;
+end;
+
+OnPCLoginEvent:
+if( .Duration > gettimetick(2) ){
+sc_start SC_EXPBOOST,(( .Duration - gettimetick(2) ) * 60000 ),( .Rate * 600 );
+sc_start SC_ITEMBOOST,(( .Duration - gettimetick(2) ) * 60000 ),( .Rate * 200 );
+}
+end;
+}

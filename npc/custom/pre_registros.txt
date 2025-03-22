@@ -1,0 +1,81 @@
+// ----------------------------------------------------------------------
+// Script de entrega de itens do Pré-Registro
+// Desenvolvido por "MayCrys"
+// https://rathena.org/board/profile/125935-maycrys/
+// ----------------------------------------------------------------------
+-	script	PreRegistros	-1,{
+onPCLoginEvent:
+	query_sql("SELECT event_active, event_period_start, event_period_end FROM pre_registro_config LIMIT 1", .event_active, .event_start$, .event_end$);
+if (.event_active != 1) {
+end;
+}
+	query_sql("SELECT reg_date FROM cp_createlog WHERE account_id = "+getcharid(3)+" LIMIT 1", .reg_date$);
+if (.reg_date$ == "") {
+end;
+}
+if (.reg_date$ < .event_start$ || .reg_date$ > .event_end$) {
+end;
+}
+	.@exists = query_sql("SELECT account_id FROM preregistro_entregas WHERE reg_ip = '"+getcharip()+"' LIMIT 1");
+if (.@exists == 0) {
+	query_sql("INSERT INTO preregistro_entregas (account_id, userid, reg_date, reg_ip) VALUES ("+getcharid(3)+", '"+escape_sql(strcharinfo(0))+"', '"+.reg_date$+"', '"+getcharip()+"')");
+}
+	.@itemCount = query_sql("SELECT COUNT(*) FROM pre_registro_items WHERE full_meta = 1", .@metaBatidaCount);
+if (.@metaBatidaCount == 0) {
+end;
+}
+	query_sql("SELECT items_entregues FROM preregistro_entregas WHERE account_id = "+getcharid(3)+" AND reg_ip = '"+getcharip()+"'", .itemsEntregues$);
+
+.@i = 0;
+.@itemDelivered = 0;
+	while (.@i < .@metaBatidaCount) {
+		query_sql("SELECT item_id, item_quantity FROM pre_registro_items WHERE full_meta = 1 LIMIT "+.@i+", 1", .item_id, .item_quantity);
+
+if (compare("," + .itemsEntregues$ + ",", "," + .item_id + ",") == 1) {
+.@i++;
+continue;
+}
+.@itemWeight = getiteminfo(.item_id, ITEMINFO_WEIGHT) * .item_quantity;
+if (.@itemWeight <= 0) {
+.@i++;
+continue;
+}
+
+.@currentWeight = Weight; 
+.@maxWeight = MaxWeight;
+
+if ((.@currentWeight * 100) >= (70 * .@maxWeight)) {
+cutin "kafra_08",2;
+mes "^1E90FF[Kafra]^000000";
+mes "^1E90FF[Pre-registration]^000000";
+mes (gettime(3)>= 6&&gettime(3)<= 12?"Good morning":(gettime(3)>=13&&gettime(3)<=18?"Good afternoon":"Good evening"))+", ^FF6600"+strcharinfo(0)+"^000000, you have reached 70% inventory capacity and cannot receive any more items at the moment! Please empty your inventory a bit and try again.";
+cutin "",255;
+close;
+end;
+}
+getitem .item_id, .item_quantity;
+.@itemDelivered = 1;
+
+if (.itemsEntregues$ == "") {
+.itemsEntregues$ = "" + .item_id;
+} else {
+.itemsEntregues$ = .itemsEntregues$ + "," + .item_id;
+}
+	query_sql("UPDATE preregistro_entregas SET items_entregues = '"+escape_sql(.itemsEntregues$)+"' WHERE account_id = "+getcharid(3)+" AND reg_ip = '"+getcharip()+"'");
+		
+.@i++;
+}
+
+if (.@itemDelivered == 1) {
+cutin "kafra_08",2;
+mes "^1E90FF[Kafra]^000000";
+mes (gettime(3)>= 6&&gettime(3)<= 12?"good morning":(gettime(3)>=13&&gettime(3)<=18?"Good afternoon":"Goodnight"))+", ^FF6600"+strcharinfo(0)+"^000000, a goal was reached in the ^1E90FFpre-registration^000000 event and you contributed, here's your prize!";
+next;
+mes "^1E90FF[Kafra]^000000";
+mes "Don't forget to vote for our server, have a good game!";
+cutin "",255;
+close;
+}
+
+end;
+}

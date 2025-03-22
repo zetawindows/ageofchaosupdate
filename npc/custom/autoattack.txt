@@ -1,0 +1,1420 @@
+-	script	bot_at	-1,{
+	function	__onoff	;
+OnInit:
+	.n$ = "^FFB266[ Auto-Battle System ]^000000";
+
+	// Battery Item ID
+	.1day_battery_id = 50000;
+	.1week_battery_id = 50001;
+	.1month_battery_id = 50002;
+
+	end;
+
+OnPCLogoutEvent:
+	if(getstatus(SC_AUTOATTACK)){
+		sc_end SC_AUTOATTACK;
+	}
+end;
+
+OnPCDieEvent:
+if(getstatus(SC_AUTOATTACK)){
+	if(!getautoattackint(22,0)){
+		sc_end SC_AUTOATTACK;	
+		end;
+	}
+	if(!countitem(7621)) {
+		sc_end SC_AUTOATTACK;
+		end;
+	}
+		delitem 7621, 1;
+		specialeffect 77;
+		atcommand "@alive";
+		end;
+}
+
+OnDo:
+	//SAVE TIME remaining
+	if(getstatus(SC_AUTOATTACK,4)){
+		sc_end SC_AUTOATTACK;
+		message strcharinfo(0),"Auto-Battle Disable";
+		end; 
+	}
+main_menu:
+	mes .n$;
+	mes "Auto battle uses AI to manage";
+	mes "battles automating actions like";
+	mes "attacks and skills. It provides";
+	mes "convenience for repetitive tasks";
+	mes "and grinding, but may reduce player";
+	mes "control and strategic depth.";
+	mes "Allow players to adjust combat settings for optimal performance.";
+
+	switch(select("^696969>^000000 ^800000Start Auto-Battle^000000",vip_status(VIP_STATUS_ACTIVE) ? "^696969>^000000 ^800000Start Auto-Battle(Offline Mode)^000000" : "","^696969>^000000 ^C71585Configuration^000000")){
+	case 1:
+		if(countitem(.1day_battery_id) > 0 || countitem(.1week_battery_id) > 0 || countitem(.1month_battery_id) > 0 ){
+			goto main_func;
+		}
+
+		if(rentalcountitem(.1day_battery_id) < 1 && rentalcountitem(.1week_battery_id) < 1 && rentalcountitem(.1month_battery_id) < 1 ) {
+			clear;
+			mes .n$;
+			mes "You don't have battery or it has expired!";
+			close;
+		}
+	main_func:
+		clear;
+		mes .n$;
+		mes "You are about to start the Auto-Battle. When you close this window, Auto-Battle will be activated.";
+		close2;
+		message strcharinfo(0),"Auto-Battle Enable";
+		sc_start SC_AUTOATTACK,86400000,0;
+		end;
+
+	case 2:
+		clear;
+		mes .n$;
+		mes "Are you sure you're in offline mode? Have you checked your config, especially the auto teleport, to avoid your character getting stuck in a bug cell?";
+		switch(select("Yes:No")){
+			case 1:
+				if (!vip_status(VIP_STATUS_ACTIVE)) {
+					clear;
+					mes .n$;
+					mes "Sorry, this feature is available only to VIP accounts.";
+					close;
+				}
+					message strcharinfo(0),"Auto-Battle Enable";
+					sc_start SC_AUTOATTACK,86400000,0;
+					atcommand "@offlinemode";
+					end;
+			case 2:
+				end;
+		}
+	
+
+	case 3:
+		goto(config_menu);
+
+	}
+
+config_menu:
+	clear;
+	mes .n$;
+	mes "Customize settings for attack priorities, skill usage, and target selection to optimize performance and adapt the combat to your style.";
+	// To disable an option, comment the line
+	menu	"^800000Go Back^000000 ^8B4513<^000000",main_menu,
+			(BaseClass == Job_Acolyte)?"^8B4513>^000000 ^803480Support Slave^000000":"",autoslave,
+			getautoattackint(10,0)?"   ^8B4513+^000000 ^4B3523Support Slave Skills^000000":"",autoslaveskills,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^0a5420Auto Movement^000000",automovement,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^808000Battle Assault^000000",melee_attack,
+			"^8B4513>^000000 ^800080Recovery^000000",regeneration_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^000080Battle Skills^000000",attackskills_menu,
+			"^8B4513>^000000 ^FF4500Self Buff^000000",supportive_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^B8860BTeleport^000000",teleport_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^808000Monster Selection^000000",monsters_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^2F4F4FLoot Selection^000000",pickupitems_menu,
+			"^8B4513>^000000 ^A52A2ASelf Resurrection^000000",tokenofsieg,
+			"^8B4513>^000000 ^C71585Reset Everything^000000",reset_all;
+	end;
+automovement:
+		clear;
+		mes .n$;
+		mes getautoattackstring(23,0);
+		mes "^ffffff_^000000";
+		mes "Auto Movement is the random movement behavior in Auto-Battle. You can disable it to manually control the character's movement, or enable it for automatic walking on the map, depending on your preference.";
+		.@amove = select("^800000Go Back^000000 ^8B4513<^000000",getautoattackint(23,0)?"^8B4513>^000000 ^00ff00Enable^000000":"^8B4513>^000000 ^FF0000Disable^000000");
+		if( .@amove == 1 )
+			goto(config_menu);
+
+		if( .@amove == 2 ){
+			if(getautoattackint(23,0))
+				setautoattack("23;0");
+			else
+				setautoattack("23;1");
+			clear;
+			goto(automovement);
+		}
+
+autoslaveskills:
+		clear;
+		mes .n$;
+		mes "-------- Slave Acolyte Skills --------";
+		mes getautoattackstring(12,0);
+		mes getautoattackstring(13,0);
+		mes getautoattackstring(14,0);
+		mes getautoattackstring(15,0);
+		mes "-------- Slave Priest Skills --------";
+		mes getautoattackstring(16,0);
+		mes getautoattackstring(17,0);
+		mes getautoattackstring(11,0);
+		mes getautoattackstring(18,0);
+		mes getautoattackstring(21,0);
+		mes getautoattackstring(19,0);
+		mes "-----  Slave High Priest Skills -----";
+		mes getautoattackstring(20,0);
+		mes "^ffffff_^000000";
+		mes "Acolyte class are key support characters known for healing, buffing, and reviving allies. They enhance team survivability and effectiveness in battles.";
+		.@melee_menu = select("^800000Go Back^000000 ^8B4513<^000000",
+		getautoattackint(12,0)?"^8B4513>^000000 ^FF0000Heal^000000":"^8B4513>^000000 ^00ff00Heal^000000",
+		getautoattackint(13,0)?"^8B4513>^000000 ^FF0000Increase Agility^000000":"^8B4513>^000000 ^00ff00Increase Agility^000000",
+		getautoattackint(14,0)?"^8B4513>^000000 ^FF0000Blessing^000000":"^8B4513>^000000 ^00ff00Blessing^000000",
+		getautoattackint(15,0)?"^8B4513>^000000 ^FF0000Angelus^000000":"^8B4513>^000000 ^00ff00Angelus^000000",
+		getautoattackint(16,0)?"^8B4513>^000000 ^FF0000Kyrie Eleison^000000":"^8B4513>^000000 ^00ff00Kyrie Eleison^000000",
+		getautoattackint(17,0)?"^8B4513>^000000 ^FF0000Magnificat^000000":"^8B4513>^000000 ^00ff00Magnificat^000000",
+		getautoattackint(11,0)?"^8B4513>^000000 ^FF0000Impositio Manus^000000":"^8B4513>^000000 ^00ff00Impositio Manus^000000",
+		getautoattackint(18,0)?"^8B4513>^000000 ^FF0000Gloria^000000":"^8B4513>^000000 ^00ff00Gloria^000000",
+		getautoattackint(21,0)?"^8B4513>^000000 ^FF0000Resurrection^000000":"^8B4513>^000000 ^00ff00Resurrection^000000",
+		getautoattackint(19,0)?"^8B4513>^000000 ^FF0000Suffragium^000000":"^8B4513>^000000 ^00ff00Suffragium^000000",
+		getautoattackint(20,0)?"^8B4513>^000000 ^FF0000Assumptio^000000":"^8B4513>^000000 ^00ff00Assumptio^000000"
+		);
+		if( .@melee_menu == 1 )
+			goto(config_menu);
+
+		if( .@melee_menu == 2 ){
+			if(getautoattackint(12,0))
+				setautoattack("12;0");
+			else
+				setautoattack("12;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 3 ){
+			if(getautoattackint(13,0))
+				setautoattack("13;0");
+			else
+				setautoattack("13;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 4 ){
+			if(getautoattackint(14,0))
+				setautoattack("14;0");
+			else
+				setautoattack("14;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 5 ){
+			if(getautoattackint(15,0))
+				setautoattack("15;0");
+			else
+				setautoattack("15;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 6 ){
+			if(getautoattackint(16,0))
+				setautoattack("16;0");
+			else
+				setautoattack("16;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 7){
+			if(getautoattackint(17,0))
+				setautoattack("17;0");
+			else
+				setautoattack("17;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 8 ){
+			if(getautoattackint(11,0))
+				setautoattack("11;0");
+			else
+				setautoattack("11;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 9 ){
+			if(getautoattackint(18,0))
+				setautoattack("18;0");
+			else
+				setautoattack("18;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 10 ){
+			if(getautoattackint(21,0))
+				setautoattack("21;0");
+			else
+				setautoattack("21;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 11 ){
+			if(getautoattackint(19,0))
+				setautoattack("19;0");
+			else
+				setautoattack("19;1");
+			clear;
+			goto(autoslaveskills);
+		}
+		if( .@melee_menu == 12 ){
+			if(getautoattackint(20,0))
+				setautoattack("20;0");
+			else
+				setautoattack("20;1");
+			clear;
+			goto(autoslaveskills);
+		}
+autoslave:
+		clear;
+		mes .n$;
+		mes getautoattackstring(10,0);
+		mes "^ffffff_^000000";
+		mes "Acolyte class are key support characters known for healing, buffing, and reviving allies. They enhance team survivability and effectiveness in battles.";
+		.@melee_menu = select("^800000Go Back^000000 ^8B4513<^000000",getautoattackint(10,0)?"^8B4513>^000000 ^FF0000Disable^000000":"^8B4513>^000000 ^00ff00Enable^000000");
+		if( .@melee_menu == 1 )
+			goto(config_menu);
+
+		if( .@melee_menu == 2 ){
+			if(getautoattackint(10,0))
+				setautoattack("10;0");
+			else
+				setautoattack("10;1");
+			clear;
+			goto(autoslave);
+		}
+
+tokenofsieg:
+		clear;
+		mes .n$;
+		mes getautoattackstring(22,0);
+		mes "^ffffff_^000000";
+		mes "You need a ^ff0000Token of Siegfried^000000 in your inventory for this feature to work.";
+		.@tokenofsieg_menu = select("^800000Go Back^000000 ^8B4513<^000000",getautoattackint(22,0)?"^8B4513>^000000 ^FF0000Disable^000000":"^8B4513>^000000 ^00ff00Enable^000000");
+		if( .@tokenofsieg_menu == 1 )
+			goto(config_menu);
+
+		if( .@tokenofsieg_menu == 2 ){
+			if(getautoattackint(22,0))
+				setautoattack("22;0");
+			else
+				setautoattack("22;1");
+			clear;
+			goto(tokenofsieg);
+		}
+
+reset_all:
+	clear;
+	.@menu$ = "[Reset settings]";
+	mes .n$;
+	mes "Restores all settings and configurations to their default state. Clears all customizations, resets parameters, and removes saved data. Use to start fresh.";
+	.@reset_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^FF0000Confirm Reset of All Configurations^000000");
+
+	switch(.@reset_menu){
+		case 1:
+			goto(config_menu);
+			break;
+
+		case 2:
+			setautoattack("24;0");
+			break;
+	}
+
+	goto(config_menu);
+	end;
+
+
+pickupitems_menu:
+	clear;
+	mes .n$;
+	mes getautoattackstring(9,0);
+
+	.@pickupitems_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^800000[^000000 ^00ff00Loot^000000 / ^ff0000Battle^000000 ^800000] Priority^000000","^8B4513>^000000 ^808000Pickup Settings^000000","^8B4513>^000000 ^B22222Add Item to List^000000","^8B4513>^000000 ^FF8C00Remove Item from List^000000","^8B4513>^000000 ^8FBC8FClear All Entries^000000");
+
+	switch(.@pickupitems_menu){
+		case 1:
+			goto(config_menu);
+			break;
+
+		case 2:
+			.@pickup_prio_choice = 0;
+			// priorize fight = 0
+			// priorize loot = 1
+			switch(getautoattackint(9,3)){
+				case 0:
+					.@pickupitems_prio_menu  = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^00ff00Priority Loot^000000");
+					switch(.@pickupitems_prio_menu){
+						case 1 :
+							goto(pickupitems_menu);
+							break;
+
+						case 2:
+							.@pickup_prio_choice = 1;
+							break;
+					}
+						
+					break;
+				case 1:
+					.@pickupitems_prio_menu  = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^ff0000Priority Combat^000000");
+					switch(.@pickupitems_prio_menu){
+						case 1 :
+							goto(pickupitems_menu);
+							break;
+
+						case 2:
+							.@pickup_prio_choice = 0;
+							break;
+					}
+					break;			
+			}
+			setautoattack("9;3;" + .@pickup_prio_choice);
+			break;
+		case 3:
+			.@pickup_config_choice = 0;
+			// every item = 0
+			// on the list = 1
+			// no item = 2
+			switch(getautoattackint(9,2)){
+				case 0:
+					.@pickupitems_config_menu  = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^800080Select Items Based on the List^000000","^8B4513>^000000 ^8B4513Do Not Picking Up Any Items^000000");
+					switch(.@pickupitems_config_menu){
+						case 1 :
+							goto(pickupitems_menu);
+							break;
+						case 2:
+							.@pickup_config_choice = 1;
+							break;
+						case 3 :
+							.@pickup_config_choice = 2;
+							break;
+					}
+						
+					break;
+				case 1:
+					.@pickupitems_config_menu  = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^708090Pick Up All Items^000000","^8B4513>^000000 ^8B4513Do Not Picking Up Any Items^000000");
+					switch(.@pickupitems_config_menu){
+						case 1 :
+							goto(pickupitems_menu);
+							break;
+						case 2:
+							.@pickup_config_choice = 0;
+							break;
+						case 3 :
+							.@pickup_config_choice = 2;
+							break;
+					}
+					break;
+				case 2:
+					.@pickupitems_config_menu  = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^708090Pick Up All Items^000000","^8B4513>^000000 ^9932CCPick up only listed items^000000");
+					switch(.@pickupitems_config_menu){
+						case 1 :
+							goto(pickupitems_menu);
+							break;
+						case 2:
+							.@pickup_config_choice = 0;
+							break;
+						case 3 :
+							.@pickup_config_choice = 1;
+							break;
+					}
+					break;				
+			}
+			setautoattack("9;2;" + .@pickup_config_choice);
+			break;
+		case 4:
+			clear;
+			mes .n$;
+			mes "Input the item ID to add to the list. (20 max)";
+			do {
+				input .@itempickup_id;
+			} while(.@itempickup_id < 1);
+
+			setautoattack("9;1;" + .@itempickup_id);
+
+			break;
+		case 5:
+			if(getautoattackint(9,1) > 0){
+				mes "Input the item ID to remove from the list.";
+
+				do {
+					input .@itempickup_id;
+				} while(.@itempickup_id < 1);
+				setautoattack("9;0;" + .@itempickup_id);
+			} else {
+				clear;
+				mes .n$;
+				mes "Sorry, you don't have any item of this list";
+				next;
+			}
+
+			break;
+		case 6:
+			setautoattack("9;-1;0");
+			break;
+	}
+
+	goto(pickupitems_menu);
+	end;
+
+monsters_menu:
+	clear;
+	mes .n$;
+	mes getautoattackstring(8,0);
+
+	.@monsters_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^FF8C00Add Monster to List^000000","^8B4513>^000000 ^DDA0DDRemove Monster from List^000000","^8B4513>^000000 ^008B8BClear All Entries^000000",getautoattackint(8,0)?"^8B4513>^000000 ^00FF00Engage Aggressive Monsters^000000":"^8B4513>^000000 ^FF0000Avoid Aggressive Monsters^000000");
+
+	switch(.@monsters_menu){
+		case 1:
+			goto(config_menu);
+			break;
+
+		case 2:
+			clear;
+			mes .n$;
+			mes "Input the id of the monster to add on the list (20 max)";
+			do {
+				input .@mob_id;
+			} while(.@mob_id < 1);
+
+			setautoattack("8;1;" + .@mob_id + ";" + getautoattackint(8,0));
+
+			break;
+		case 3:
+			if(getautoattackint(8,1) > 0){
+				mes "Input the id of the monster to delete from the list";
+
+				do {
+					input .@mob_id;
+				} while(.@mob_id < 1);
+				setautoattack("8;0;" + .@mob_id + ";" + getautoattackint(8,0));
+			} else {
+				clear;
+				mes .n$;
+				mes "Sorry, you don't have any monster of this list";
+				next;
+			}
+
+			break;
+		case 4:
+			setautoattack("8;-1;0;0");
+			break;
+
+		case 5:
+			if(getautoattackint(8,0))
+				setautoattack("8;0;0;0");
+			else
+				setautoattack("8;0;0;1");
+
+			break;
+	}
+
+	goto(monsters_menu);
+	end;
+
+teleport_menu:
+	clear;
+	mes .n$;
+	mes getautoattackstring(7,0);
+	mes getautoattackstring(7,1);
+	mes getautoattackstring(7,2);
+	mes getautoattackstring(7,3);
+	mes getautoattackstring(7,4);
+	mes getautoattackstring(7,5);
+	mes getautoattackstring(7,6);
+	mes getautoattackstring(7,7);
+	mes getautoattackstring(7,8);
+	mes getautoattackstring(7,9);
+
+	if(getautoattackint(7,0) == 1)
+		.@teleport_menu_txt$ = "^8B4513>^000000 ^00FF00Activate Teleport Skill^000000";
+	else
+		.@teleport_menu_txt$ = "^8B4513>^000000 ^ff0000Deactivate Teleport Skill^000000";
+
+		.@teleport_menu_txt$ += ":^8B4513>^000000 ^D2691ETeleport Item^000000";
+
+		.@teleport_menu_txt$ += ":^8B4513>^000000 ^CD5C5CSet/Adjust Minimum HP^000000:^8B4513>^000000 ^B8860BSet Teleport Delay^000000";
+
+	.@teleport_menu = select("^800000Go Back^000000 ^8B4513<^000000",.@teleport_menu_txt$);
+
+	switch(.@teleport_menu){
+		case 1:
+			goto(config_menu);
+			break;
+
+		case 2:
+			if(getautoattackint(7,0))
+				setautoattack("7;0;0");
+			else
+				setautoattack("7;0;1");
+			break;
+		case 3:
+			itemfly_menu:
+			clear;
+			mes .n$;
+			mes getautoattackstring(7,1);
+			mes getautoattackstring(7,2);
+			mes getautoattackstring(7,3);
+			mes getautoattackstring(7,4);
+			mes getautoattackstring(7,5);
+			mes getautoattackstring(7,6);
+			mes getautoattackstring(7,7);
+			mes getautoattackstring(7,8);
+
+			switch(select("^800000Go Back^000000 ^8B4513<^000000",
+			(countitem(601) > 0 ) ? getautoattackint(7,1)?"^8B4513>^000000 ^00FF00Fly Wing^000000":"^8B4513>^000000 ^ff0000Fly Wing^000000":"",
+			(countitem(12003) > 0 ) ? getautoattackint(7,2)?"^8B4513>^000000 ^00FF00Level 1 Teleport^000000":"^8B4513>^000000 ^ff0000Level 1 Teleport^000000":"",
+			(countitem(12212) > 0 ) ? getautoattackint(7,3)?"^8B4513>^000000 ^00FF00Giant Fly Wing^000000":"^8B4513>^000000 ^ff0000Giant Fly Wing^000000":"",
+			(countitem(12323) > 0 ) ? getautoattackint(7,4)?"^8B4513>^000000 ^00FF00Novice Fly Wing^000000":"^8B4513>^000000 ^ff0000Novice Fly Wing^000000":"",
+			(countitem(12887) > 0 ) ? getautoattackint(7,5)?"^8B4513>^000000 ^00FF00Infinite Flywing^000000":"^8B4513>^000000 ^ff0000Infinite Flywing^000000":"",
+			(countitem(23280) > 0 ) ? getautoattackint(7,6)?"^8B4513>^000000 ^00FF00Novice Fly Wing^000000":"^8B4513>^000000 ^ff0000Novice Fly Wing^000000":"",
+			(countitem(23288) > 0 ) ? getautoattackint(7,7)?"^8B4513>^000000 ^00FF00Compressed Fly Wing^000000":"^8B4513>^000000 ^ff0000Compressed Fly Wing^000000":"",
+			(countitem(23338) > 0 ) ? getautoattackint(7,8)?"^8B4513>^000000 ^00FF00Compressed Fly Wing^000000":"^8B4513>^000000 ^ff0000Compressed Fly Wing^000000":""
+
+			)){
+
+				case 1:
+					goto(teleport_menu);
+					end;
+
+				case 2:
+					if(getautoattackint(7,1)){
+						setautoattack("7;1;0");
+						setautoattack("7;2;1");
+						setautoattack("7;3;1");
+						setautoattack("7;4;1");
+						setautoattack("7;5;1");
+						setautoattack("7;6;1");
+						setautoattack("7;7;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;1;1");
+						goto(itemfly_menu);
+						end;
+
+				case 3:
+					if(getautoattackint(7,2)){
+						setautoattack("7;2;0");
+						setautoattack("7;1;1");
+						setautoattack("7;3;1");
+						setautoattack("7;4;1");
+						setautoattack("7;5;1");
+						setautoattack("7;6;1");
+						setautoattack("7;7;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;2;1");
+						goto(itemfly_menu);
+					end;
+
+				case 4:
+					if(getautoattackint(7,3)){
+						setautoattack("7;3;0");
+						setautoattack("7;2;1");
+						setautoattack("7;1;1");
+						setautoattack("7;4;1");
+						setautoattack("7;5;1");
+						setautoattack("7;6;1");
+						setautoattack("7;7;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;3;1");
+						goto(itemfly_menu);
+					end;
+
+				case 5:
+					if(getautoattackint(7,4)){
+						setautoattack("7;4;0");
+						setautoattack("7;2;1");
+						setautoattack("7;3;1");
+						setautoattack("7;1;1");
+						setautoattack("7;5;1");
+						setautoattack("7;6;1");
+						setautoattack("7;7;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;4;1");
+						goto(itemfly_menu);
+					end;
+
+				case 6:
+					if(getautoattackint(7,5)){
+						setautoattack("7;5;0");
+						setautoattack("7;2;1");
+						setautoattack("7;3;1");
+						setautoattack("7;4;1");
+						setautoattack("7;1;1");
+						setautoattack("7;6;1");
+						setautoattack("7;7;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;5;1");
+						goto(itemfly_menu);
+					end;
+
+				case 7:
+					if(getautoattackint(7,6)){
+						setautoattack("7;6;0");
+						setautoattack("7;2;1");
+						setautoattack("7;3;1");
+						setautoattack("7;4;1");
+						setautoattack("7;5;1");
+						setautoattack("7;1;1");
+						setautoattack("7;7;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;6;1");
+						goto(itemfly_menu);
+					end;
+
+				case 8:
+					if(getautoattackint(7,7)){
+						setautoattack("7;7;0");
+						setautoattack("7;2;1");
+						setautoattack("7;3;1");
+						setautoattack("7;4;1");
+						setautoattack("7;5;1");
+						setautoattack("7;6;1");
+						setautoattack("7;1;1");
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;7;1");
+						goto(itemfly_menu);
+					end;
+
+				case 9:
+					if(getautoattackint(7,8)){
+						setautoattack("7;8;0");
+						setautoattack("7;2;1");
+						setautoattack("7;3;1");
+						setautoattack("7;4;1");
+						setautoattack("7;5;1");
+						setautoattack("7;6;1");
+						setautoattack("7;7;1");
+						setautoattack("7;1;1");
+						goto(itemfly_menu);
+					}
+						setautoattack("7;8;1");
+						goto(itemfly_menu);
+					end;
+			}
+
+		case 4:
+			do {
+				clear;
+				mes .n$;
+				mes "Input the minimum ^32CD32HP^000000 % threshold at which your character will automatically trigger an auto teleport when they take damage.";
+				mes "Min ^D2691E5^000000, Max ^D2691E90^000000";
+				input .@teleport_minhpvalue;
+			} while(.@teleport_minhpvalue != 0 && (.@teleport_minhpvalue < 5 || .@teleport_minhpvalue > 90));
+			setautoattack("7;9;"+.@teleport_minhpvalue);
+			break;
+		case 5:
+			do {
+				clear;
+				mes .n$;
+				mes "Input the delay time in seconds. If no monsters are encountered within this period, your character will automatically teleport.";
+				mes "Min ^D2691E2^000000, Max ^D2691E600^000000";
+				input .@teleport_delayvalue;
+			} while(.@teleport_delayvalue != 0 && (.@teleport_delayvalue < 2 || .@teleport_delayvalue > 600));
+			setautoattack("7;10;"+.@teleport_delayvalue);
+			break;
+	}
+
+	goto(teleport_menu);
+	end;
+
+melee_attack:
+	clear;
+	mes .n$;
+	mes getautoattackstring(6,0);
+	mes "^ffffff_^000000";
+	mes "A close-range combat move involving physical weapons or unarmed strikes, dealing direct damage and requiring proximity to the target for effectiveness.";
+	.@melee_menu = select("^800000Go Back^000000 ^8B4513<^000000",getautoattackint(6,0)?"^8B4513>^000000 ^00FF00Activate^000000":"^8B4513>^000000 ^ff0000Deactivate^000000");
+
+	if( .@melee_menu == 2 ){
+		if(getautoattackint(6,0))
+			setautoattack("6;0");
+		else
+			setautoattack("6;1");
+		clear;
+
+		goto(melee_attack);
+	}
+
+	goto(config_menu);
+	end;
+
+regeneration_menu:
+	clear;
+	mes .n$;
+	mes "The process of restoring health, stamina, or resources after damage or exhaustion, often through healing abilities, items, or rest to regain full strength.";
+	menu	"^800000Go Back^000000 ^8B4513<^000000",config_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^7B68EEAuto-Heal^000000",heal_menu,
+			"^8B4513>^000000 ^800000HP / SP Potions^000000",potion_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^8B008BSit to Rest^000000",sit_regen_menu;
+	end;
+
+heal_menu:
+	clear;
+	mes .n$;
+	if(!getskilllv(28) && !getskilllv(2051) && !getskilllv(231)){
+		mes .n$;
+		mes "Sorry, you don't have any kind of heal skills of this list";
+		mes "Heal, Highness Heal, Potion Pitcher";
+		next;
+		goto(regeneration_menu);
+	}
+
+	mes getautoattackstring(0,0);
+
+	.@heal_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^8B4513Add / Adjust Skills^000000","^8B4513>^000000 ^708090Deactivate a Skills^000000");
+	if( .@heal_menu == 2 ){
+		clear;
+		mes .n$;
+		mes "Input the skill ID you want to add.";
+		if(getskilllv(28)) // Heal
+			mes "^FF0000(28)^000000 [" + getskillinfostring(0,28) + "]" + " - Max lv : " + getskilllv(28);
+		if(getskilllv(2051)) // Highness Heal
+			mes "^FF0000(2051)^000000 [" + getskillinfostring(0,2051) + "]" + " - Max lv : " + getskilllv(2051);
+		if(getskilllv(231)) // Potion Pitcher
+			mes "^FF0000(231)^000000 [" + getskillinfostring(0,231) + "]" + " - Max lv : " + getskilllv(231);
+
+		input .@heal_skillid;
+		if(.@heal_skillid < 1 )
+			goto(heal_menu);
+
+		if((.@heal_skillid != 28 && .@heal_skillid != 2051 && .@heal_skillid != 231) || !getskilllv(.@heal_skillid)){
+			clear;
+			mes .n$;
+			mes "Please input an available skill";
+			goto(heal_menu);
+		} else {
+			do{
+				clear;
+				mes .n$;
+				mes "Input the skill level to use.";
+				mes "[" + getskillinfostring(0,.@heal_skillid) + "]" + " - Max lv : " + getskilllv(.@heal_skillid);
+				input .@heal_skilllv;
+			} while(.@heal_skilllv < 1 || .@heal_skilllv > getskilllv(.@heal_skillid));
+
+			do {
+				clear;
+				mes .n$;
+				mes "Input the value of HP % to use the skill (ex : 10 to use skill if hp are below 10%)";
+				mes "Min value is 5, Max value is 90";
+				mes "[" + getskillinfostring(0,.@heal_skillid) + "]" + " - Lv : " + .@heal_skilllv;
+				input .@heal_minhpvalue;
+			} while(.@heal_minhpvalue < 5 || .@heal_minhpvalue > 90);
+			setautoattack("0;1;"+ .@heal_skillid + ";" + .@heal_skilllv + ";" + .@heal_minhpvalue);
+			clear;
+		}
+		goto(heal_menu);
+	}
+	if( .@heal_menu == 3 ){
+		if(getautoattackint(0,0) == 0){
+			clear;
+			mes .n$;
+			mes "There is no active auto heal skill to delete";
+			next;
+			goto(heal_menu);
+		} else {
+			mes "Please input the skill id to disable.";
+			input .@heal_skillid;
+			if(.@heal_skillid < 1 )
+				goto(heal_menu);
+
+			if((.@heal_skillid != 28 && .@heal_skillid != 2051 && .@heal_skillid != 231) || !getskilllv(.@heal_skillid)){
+				clear;
+				mes .n$;
+				mes "Please input an available skill";
+				goto(heal_menu);
+			} else 
+				setautoattack("0;0;"+ .@heal_skillid + ";0;0");
+			goto(heal_menu);
+		}
+	}
+
+	goto(regeneration_menu);
+	end;
+
+potion_menu:
+	clear;
+	mes .n$;
+	mes getautoattackstring(1,0);
+	menu	"^800000Go Back^000000 ^8B4513<^000000",regeneration_menu,
+			"^8B4513>^000000 ^32CD32HP Potions^000000",hpheal_menu,
+			"^8B4513>^000000 ^0000FFSP Potions^000000",spheal_menu;
+	end;
+
+	hpheal_menu:
+		clear;
+		if(getautoattackint(1,0) == 0){
+			mes .n$;
+			mes "Sorry, you don't have any healing items.";
+			next;
+			goto(regeneration_menu);
+		}
+
+		mes .n$;
+		mes getautoattackstring(1,0);
+
+		.@hpheal_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^8B4513Add / Adjust^000000 ^32CD32HP^000000 ^8B4513Potions^000000","^8B4513>^000000 ^708090Deactivate a^000000 ^32CD32HP^000000 ^8B4513Potions^000000");
+		if( .@hpheal_menu == 2 ){
+			clear;
+			mes .n$;
+			mes "Input the item ID you want to add.";
+			mes getautoattackstring(1,-1);
+
+			input .@hppotion_id;
+			if(.@hppotion_id < 1 )
+			goto(hpheal_menu);
+
+			do {
+				clear;
+				mes .n$;  
+				mes "Set ^32CD32HP^000000 % to use a consumable";
+				mes "^ff0000Example^000000 ^D2691E10^000000% means use it if ^32CD32HP^000000 falls below ^D2691E10^000000%";
+				mes "Min ^D2691E5^000000%, Max ^D2691E90^000000%";
+				mes "^D2691E0^000000 to disable.";
+				input .@potion_minhpvalue;
+			} while(.@potion_minhpvalue != 0 && (.@potion_minhpvalue < 5 || .@potion_minhpvalue > 90));
+
+			setautoattack("1;1;"+ .@hppotion_id + ";" + .@potion_minhpvalue + ";" + .@potion_minspvalue);
+			clear;
+
+			goto(hpheal_menu);
+		}
+		if( .@hpheal_menu == 3 ){
+			if(getautoattackint(1,0) == 0){
+				clear;
+				mes .n$;
+				mes "There are no active potion items currently available to disable.";
+				next;
+				goto(hpheal_menu);
+			} else {
+				mes "Please input the item id to disable.";
+				input .@hppotion_id;
+				if(.@hppotion_id < 1 )
+				goto(hpheal_menu);
+				setautoattack("1;0;"+ .@hppotion_id + ";0;0");
+				goto(hpheal_menu);
+			}
+		}
+		if( .@hpheal_menu == 1 )
+		goto(potion_menu);
+		end;
+		
+	spheal_menu:
+		clear;
+		if(getautoattackint(1,0) == 0){
+			mes .n$;
+			mes "Sorry, you don't have any healing items.";
+			next;
+			goto(regeneration_menu);
+		}
+
+		mes .n$;
+		mes getautoattackstring(1,0);
+
+		.@spheal_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^8B4513Add / Adjust^000000 ^0000FFSP^000000 ^8B4513Potions^000000","^8B4513>^000000 ^708090Deactivate a^000000 ^0000FFSP^000000 ^8B4513Potions^000000");
+		if( .@spheal_menu == 2 ){
+			clear;
+			mes .n$;
+			mes getautoattackstring(1,-1);
+			mes "Input the item ID you want to add.";
+
+			input .@sppotion_id;
+			if(.@sppotion_id < 1 )
+			goto(spheal_menu);
+
+			do {
+				clear;
+				mes .n$;  
+				mes "Set ^0000FFSP^000000 % to use a consumable";
+				mes "^ff0000Example^000000 ^D2691E10^000000% means use it if ^0000FFSP^000000 falls below ^D2691E10^000000%";
+				mes "Min ^D2691E5^000000%, Max ^D2691E90^000000%";
+				mes "^D2691E0^000000 to disable.";
+				input .@potion_minspvalue;
+			} while(.@potion_minspvalue != 0 && (.@potion_minspvalue < 5 || .@potion_minspvalue > 90));
+
+			setautoattack("1;1;"+ .@sppotion_id + ";0;" + .@potion_minspvalue);
+			clear;
+
+			goto(spheal_menu);
+		}
+		if( .@spheal_menu == 3 ){
+			if(getautoattackint(1,0) == 0){
+				clear;
+				mes .n$;
+				mes "There are no active potion items currently available to disable.";
+				next;
+				goto(spheal_menu);
+			} else {
+				mes "Please input the item id to disable.";
+				input .@sppotion_id;
+				if(.@sppotion_id < 1 )
+				goto(spheal_menu);
+				setautoattack("1;0;"+ .@sppotion_id + ";0;0");
+				goto(spheal_menu);
+			}
+		}
+
+		if( .@spheal_menu == 1 )
+		goto(potion_menu);
+		end;
+
+sit_regen_menu:
+	clear;
+	.@menu$ = "[Sit to Rest]";
+
+	mes .n$;
+	mes getautoattackstring(2,0); // status
+	mes getautoattackstring(2,1); // hp
+	mes getautoattackstring(2,2); // sp
+
+	.@sit_regen_menu = select("^800000Go Back^000000 ^8B4513<^000000",getautoattackint(2,0)?"^8B4513>^000000 ^FF0000Deactivate^000000:^8B4513>^000000 ^708090Adjust^000000":"^8B4513>^000000 ^008000Activate^000000");
+	if( (.@sit_regen_menu == 2 && !getautoattackint(2,0)) || (.@sit_regen_menu == 3 && getautoattackint(2,0))){
+		clear;
+		mes .n$;
+		mes "Input the ^32CD32HP^000000 % at which your";
+		mes "character should ^ff0000sit^000000.";
+		mes "^ff0000Example^000000, setting it to ^D2691E10^000000% means";
+		mes "the character will sit when ^32CD32HP^000000 drops below ^D2691E10^000000%.";
+		mes "^FFFFFF_^000000";
+		mes "The minimum value you can set is ^D2691E5^000000%, and the maximum is ^D2691E90^000000%.";
+		mes "^FFFFFF_^000000";
+		mes "Input ^D2691E0^000000 to turn off this feature and prevent automatic sitting based on ^32CD32HP^000000 %.";
+
+		do {
+			input .@sit_regen_minhpvalue;
+		} while(.@sit_regen_minhpvalue != 0 && (.@sit_regen_minhpvalue < 5 || .@sit_regen_minhpvalue > 90));
+
+		if(.@sit_regen_minhpvalue > 0){
+			clear;
+			mes .n$;
+			mes "Input the ^32CD32HP^000000 % at which your";
+			mes "character should ^ff0000stand^000000.";
+			mes "^ff0000Example^000000, setting it to ^D2691E10^000000% means";
+			mes "the character will sit when ^32CD32HP^000000 drops below ^D2691E10^000000%.";
+			mes "^ff0000This value must be greater than the minimum HP:^000000 ^D2691E" + .@sit_regen_minhpvalue + "^000000";
+			mes "^FFFFFF_^000000";
+			mes "The minimum value you can set is ^D2691E5^000000%, and the maximum is ^D2691E90^000000%.";
+			mes "^FFFFFF_^000000";
+			mes "Input ^D2691E0^000000 to turn off this feature and prevent automatic sitting based on ^32CD32HP^000000 %.";
+
+			do {
+				input .@sit_regen_maxhpvalue;
+			} while((.@sit_regen_maxhpvalue != 0 && (.@sit_regen_maxhpvalue < 5 || .@sit_regen_maxhpvalue > 90)) || (.@sit_regen_minhpvalue >= .@sit_regen_maxhpvalue));
+		}
+
+		clear;
+		mes .n$;
+		mes "Input the ^0000FFSP^000000 % at which your";
+		mes "character should ^ff0000sit^000000.";
+		mes "^ff0000Example^000000, setting it to ^D2691E10^000000% means";
+		mes "the character will sit when ^0000FFSP^000000 drops below ^D2691E10^000000%.";
+		mes "^FFFFFF_^000000";
+		mes "The minimum value you can set is ^D2691E5^000000%, and the maximum is ^D2691E90^000000%.";
+		mes "^FFFFFF_^000000";
+		mes "Input ^D2691E0^000000 to turn off this feature and prevent automatic sitting based on ^0000FFSP^000000 %.";
+
+		do {
+			input .@sit_regen_minspvalue;
+		} while(.@sit_regen_minspvalue != 0 && (.@sit_regen_minspvalue < 5 || .@sit_regen_minspvalue > 90));
+
+		if(.@sit_regen_minspvalue > 0){
+			clear;
+			mes .n$;
+			mes "Input the ^0000FFSP^000000 % at which your";
+			mes "character should ^ff0000sit^000000.";
+			mes "^ff0000Example^000000, setting it to ^D2691E10^000000% means";
+			mes "the character will sit when ^0000FFSP^000000 drops below ^D2691E10^000000%.";
+			mes "^ff0000This value must be greater than the minimum HP:^000000 ^D2691E" + .@sit_regen_minspvalue + "^000000";
+			mes "^FFFFFF_^000000";
+			mes "The minimum value you can set is ^D2691E5^000000%, and the maximum is ^D2691E90^000000%.";
+			mes "^FFFFFF_^000000";
+			mes "Input ^D2691E0^000000 to turn off this feature and prevent automatic sitting based on ^0000FFSP^000000 %.";
+
+			do {
+				input .@sit_regen_maxspvalue;
+			} while((.@sit_regen_maxspvalue != 0 && (.@sit_regen_maxspvalue < 5 || .@sit_regen_maxspvalue > 90)) || (.@sit_regen_minspvalue >= .@sit_regen_maxspvalue));
+		}
+		
+		setautoattack("2;1;"+ .@sit_regen_minhpvalue + ";" + .@sit_regen_maxhpvalue + ";" + .@sit_regen_minspvalue + ";" + .@sit_regen_maxspvalue);
+
+	} else if( .@sit_regen_menu == 2 && getautoattackint(2,0)){
+		setautoattack("2;0;0;0;0;0");
+	} else {
+		clear;
+		goto(regeneration_menu);
+	}
+
+	clear;
+	goto(sit_regen_menu);
+	end;
+
+attackskills_menu:
+	clear;
+
+	mes .n$;	
+	mes getautoattackstring(4,0);
+	
+	.@attackskills_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^FF8C00Add Skills^000000","^8B4513>^000000 ^A0522DAdjust Skills^000000","^8B4513>^000000 ^8B008BDeactivate a Skills^000000");
+	if( .@attackskills_menu == 1 ){
+		goto(config_menu);
+	}
+
+	if( .@attackskills_menu < 4 ){
+		if( .@attackskills_menu == 2 ){
+			clear;
+			mes .n$;
+			mes "Input the skill ID you want to add.";
+			mes getautoattackstring(4,-1);
+		} else {
+			if(getautoattackint(4,0) == 0){
+				mes .n$;
+				mes "There is no active auto-battle skills to adjust";
+				next;
+				goto(attackskills_menu);
+			}
+			mes "Input the skill ID you want to adjust.";
+		}
+
+		input .@attack_skillid;
+		if(.@attack_skillid < 1 )
+			goto(attackskills_menu);
+
+		if(!getskillinfoint(2,.@attack_skillid) || !getskilllv(.@attack_skillid)){
+			clear;
+			mes .n$;
+			mes "Sorry, you don't have that skill or this skill doesn't exist or is not attack type";
+			next;
+			goto(attackskills_menu);
+		}	
+
+		do{
+			clear;
+			mes .n$;
+			mes "Input the skill level to use.";
+			mes "[" + getskillinfostring(0,.@attack_skillid) + "]" + " - Max lv : " + getskilllv(.@attack_skillid);
+			input .@attack_skilllv;
+		} while(.@attack_skilllv < 1 || .@attack_skilllv > getskilllv(.@attack_skillid));
+
+		setautoattack("4;1;"+ .@attack_skillid + ";" + .@attack_skilllv);
+		clear;
+
+		goto(attackskills_menu);
+	} else if(.@attackskills_menu == 4) {
+		if(getautoattackint(4,0) == 0){
+			mes .n$;
+			mes "There is no active auto-battle skills to adjust";
+			next;
+			goto(attackskills_menu);
+		} else {
+			mes "Please input the skill id to disable.";
+			input .@attack_skillid;
+			if(.@attack_skillid < 1 )
+				goto(attackskills_menu);
+
+			if(!getskillinfoint(2,.@attack_skillid) || !getskilllv(.@attack_skillid)){
+				clear;
+				mes .n$;
+				mes "Sorry, you don't have that skill or this skill doesn't exist or is not attack type";
+				next;
+				goto(attackskills_menu);
+			}
+			setautoattack("4;0;"+ .@attack_skillid + ";0");
+			goto(attackskills_menu);
+		}
+	}
+
+	goto(config_menu);
+	end;
+
+supportive_menu:
+	clear;
+	mes .n$;
+	mes "The gradual restoration of health, stamina, or resources over time, often through abilities, items, or natural recovery to enhance performance and resilience.";
+	menu	"^800000Go Back^000000 ^8B4513<^000000",config_menu,
+			getautoattackint(10,0)?"":"^8B4513>^000000 ^A52A2ABuff Skills^000000",buffskills_menu,
+			"^8B4513>^000000 ^FF6347Buff Items^000000",buffitems_menu;
+	end;
+
+	buffskills_menu:
+	clear;
+
+	mes .n$;
+	mes getautoattackstring(3,0);
+	
+	.@buffskills_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^008B8BAdd Skills^000000","^8B4513>^000000 ^4B0082Adjust Skills^000000","^8B4513>^000000 ^FF69B4Deactivate a Skills^000000");
+	
+	if( .@buffskills_menu == 1){
+		goto(supportive_menu);
+		end;
+	}
+
+	if( .@buffskills_menu < 4 ){
+		if( .@buffskills_menu == 2 ){
+			clear;
+			mes .n$;
+			mes "Input the skill ID you want to add.";
+			mes getautoattackstring(3,-1);
+		} else {
+			if(getautoattackint(3,0) == 0){
+				mes .n$;
+				mes "There is no active auto buff skills to modify";
+				next;
+				goto(buffskills_menu);
+			}
+			mes "Input the skill ID you want to adjust.";
+		}
+
+		input .@buff_skillid;
+		if(.@buff_skillid < 1 )
+			goto(buffskills_menu);
+
+		if(!getskillinfoint(1,.@buff_skillid) || !getskilllv(.@buff_skillid)){
+			clear;
+			mes .n$;
+			mes "Sorry, you don't have that skill or this skill doesn't exist or is not self / support type";
+			next;
+			goto(buffskills_menu);
+		}	
+
+		do{
+			clear;
+			mes .n$;
+			mes "Input the skill level to use.";
+			mes "[" + getskillinfostring(0,.@buff_skillid) + "]" + " - Max lv : " + getskilllv(.@buff_skillid);
+			input .@buff_skilllv;
+		} while(.@buff_skilllv < 1 || .@buff_skilllv > getskilllv(.@buff_skillid));
+
+		setautoattack("3;1;"+ .@buff_skillid + ";" + .@buff_skilllv);
+		clear;
+
+		goto(buffskills_menu);
+	} else if( .@buffskills_menu == 4 ){
+		if(getautoattackint(3,0) == 0){
+			mes .n$;
+			mes "There is no active auto buff skills to delete";
+			next;
+			goto(buffskills_menu);
+		} else {
+			mes "Please input the skill id to disable."; 
+			input .@buff_skillid;
+			if(.@buff_skillid < 1 )
+				goto(buffskills_menu);
+
+			if(!getskillinfoint(1,.@buff_skillid) || !getskilllv(.@buff_skillid)){
+				clear;
+				mes .n$;
+				mes "Sorry, you don't have that skill or this skill doesn't exist or is not self / support type";
+				next;
+				goto(buffskills_menu);
+			}
+			setautoattack("3;0;"+ .@buff_skillid + ";0");
+			goto(buffskills_menu);
+		}
+	}
+
+	buffitems_menu:
+	clear;
+
+	mes .n$;
+	if(countitem(645))
+		mes getautoattackstring(5,645);
+	if(countitem(656))
+		mes getautoattackstring(5,656);
+	if(countitem(657))
+		mes getautoattackstring(5,657);
+	if(countitem(662))
+		mes getautoattackstring(5,662);
+	if(countitem(12016))
+		mes getautoattackstring(5,12016);
+	if(countitem(12028))
+		mes getautoattackstring(5,12028);
+	if(countitem(12030))
+		mes getautoattackstring(5,12030);
+	if(countitem(12031))
+		mes getautoattackstring(5,12031);
+	if(countitem(12033))
+		mes getautoattackstring(5,12033);
+	if(countitem(12034))
+		mes getautoattackstring(5,12034);
+	if(countitem(12118))
+		mes getautoattackstring(5,12118);
+	if(countitem(12119))
+		mes getautoattackstring(5,12119);
+	if(countitem(12120))
+		mes getautoattackstring(5,12120);
+	if(countitem(12121))
+		mes getautoattackstring(5,12121);
+	if(countitem(12122))
+		mes getautoattackstring(5,12122);
+	if(countitem(12123))
+		mes getautoattackstring(5,12123);
+	if(countitem(12208))
+		mes getautoattackstring(5,12208);
+	if(countitem(12209))
+		mes getautoattackstring(5,12209);
+	if(countitem(12210))
+		mes getautoattackstring(5,12210);
+	if(countitem(12212))
+		mes getautoattackstring(5,12212);
+	if(countitem(12215))
+		mes getautoattackstring(5,12215);
+	if(countitem(12216))
+		mes getautoattackstring(5,12216);
+	if(countitem(12217))
+		mes getautoattackstring(5,12217);
+	if(countitem(12218))
+		mes getautoattackstring(5,12218);
+	if(countitem(12219))
+		mes getautoattackstring(5,12219);
+	if(countitem(12220))
+		mes getautoattackstring(5,12220);
+	if(countitem(12250))
+		mes getautoattackstring(5,12250);
+	if(countitem(12251))
+		mes getautoattackstring(5,12251);
+	if(countitem(12252))
+		mes getautoattackstring(5,12252);
+	if(countitem(12253))
+		mes getautoattackstring(5,12253);
+	if(countitem(12254))
+		mes getautoattackstring(5,12254);
+	if(countitem(12255))
+		mes getautoattackstring(5,12255);
+	if(countitem(12262))
+		mes getautoattackstring(5,12262);
+	if(countitem(12263))
+		mes getautoattackstring(5,12263);
+	if(countitem(12264))
+		mes getautoattackstring(5,12264);
+	if(countitem(12265))
+		mes getautoattackstring(5,12265);
+	if(countitem(12411))
+		mes getautoattackstring(5,12411);
+	if(countitem(12412))
+		mes getautoattackstring(5,12412);
+	if(countitem(14500))
+		mes getautoattackstring(5,14500);
+	if(countitem(14532))
+		mes getautoattackstring(5,14532);
+	if(countitem(14533))
+		mes getautoattackstring(5,14533);
+	if(countitem(14534))
+		mes getautoattackstring(5,14534);
+	if(countitem(14535))
+		mes getautoattackstring(5,14535);
+	if(countitem(14536))
+		mes getautoattackstring(5,14536);
+	if(countitem(14541))
+		mes getautoattackstring(5,14541);
+	if(countitem(14542))
+		mes getautoattackstring(5,14542);
+	if(countitem(14543))
+		mes getautoattackstring(5,14543);
+	if(countitem(14544))
+		mes getautoattackstring(5,14544);
+	if(countitem(14545))
+		mes getautoattackstring(5,14545);
+	if(countitem(14592))
+		mes getautoattackstring(5,14592);
+
+	.@buffitems_menu = select("^800000Go Back^000000 ^8B4513<^000000","^8B4513>^000000 ^CD5C5CAdd / Adjust Buff Item^000000","^8B4513>^000000 ^DC143CDeactivate a Buff Item^000000");
+	if( .@buffitems_menu == 2 ){
+		mes "Input the item ID you want to add. 0 to cancel";
+
+		do {
+			input .@buffitem_id;
+
+			if (.@buffitem_id == 0) {
+				goto(buffitems_menu);
+				end;
+			}
+
+		} while(.@buffitem_id != 645 && .@buffitem_id != 656 && .@buffitem_id != 657 && .@buffitem_id != 662 &&
+		.@buffitem_id != 12016 && .@buffitem_id != 12028 && .@buffitem_id != 12030 && .@buffitem_id != 12031 &&
+		.@buffitem_id != 12033 && .@buffitem_id != 12034 && .@buffitem_id != 12118 && .@buffitem_id != 12119 &&
+		.@buffitem_id != 12120 && .@buffitem_id != 12121 && .@buffitem_id != 12122 && .@buffitem_id != 12123 &&
+		.@buffitem_id != 12208 && .@buffitem_id != 12209 && .@buffitem_id != 12210 && .@buffitem_id != 12212 &&
+		.@buffitem_id != 12215 && .@buffitem_id != 12216 && .@buffitem_id != 12217 && .@buffitem_id != 12218 &&
+		.@buffitem_id != 12219 && .@buffitem_id != 12220 && .@buffitem_id != 12250 && .@buffitem_id != 12251 &&
+		.@buffitem_id != 12252 && .@buffitem_id != 12253 && .@buffitem_id != 12254 && .@buffitem_id != 12255 &&
+		.@buffitem_id != 12262 && .@buffitem_id != 12263 && .@buffitem_id != 12264 && .@buffitem_id != 12265 &&
+		.@buffitem_id != 12411 && .@buffitem_id != 12412 && .@buffitem_id != 14500 && .@buffitem_id != 14532 &&
+		.@buffitem_id != 14533 && .@buffitem_id != 14534 && .@buffitem_id != 14535 && .@buffitem_id != 14536 &&
+		.@buffitem_id != 14541 && .@buffitem_id != 14542 && .@buffitem_id != 14543 && .@buffitem_id != 14544 &&
+		.@buffitem_id != 14545 && .@buffitem_id != 14592);
+
+		if(countitem(.@buffitem_id) < 1 ){
+			goto(buffitems_menu);
+		}
+
+		do {
+			clear;
+			mes .n$;
+			mes "Input the delay value in seconds for the time interval before each use.";
+			mes "^D2691E60^000000 = 1m";
+			mes "^D2691E3600^000000 = 1h";
+			mes "Min ^D2691E600^000000, Max ^D2691E3600^000000";
+			input .@buffitem_delayvalue;
+		} while(.@buffitem_delayvalue < 60 || .@buffitem_delayvalue > 3600);
+
+		setautoattack("5;1;"+ .@buffitem_id + ";" + .@buffitem_delayvalue);
+		clear;
+
+		goto(buffitems_menu);
+	}
+	if( .@buffitems_menu == 3 ){
+		if(getautoattackint(5,0) == 0){
+			clear;
+			mes .n$;
+			mes "There is no active buff item to delete";
+			next;
+			goto(buffitems_menu);
+		} else {
+			mes "Please input the buff item id to disable. 0 to cancel";
+
+			do {
+				input .@buffitem_id;
+
+				if (.@buffitem_id == 0) {
+					goto(buffitems_menu);
+					end;
+				}
+
+			} while(.@buffitem_id != 645 && .@buffitem_id != 656 && .@buffitem_id != 657 && .@buffitem_id != 662 &&
+			.@buffitem_id != 12016 && .@buffitem_id != 12028 && .@buffitem_id != 12030 && .@buffitem_id != 12031 &&
+			.@buffitem_id != 12033 && .@buffitem_id != 12034 && .@buffitem_id != 12118 && .@buffitem_id != 12119 &&
+			.@buffitem_id != 12120 && .@buffitem_id != 12121 && .@buffitem_id != 12122 && .@buffitem_id != 12123 &&
+			.@buffitem_id != 12208 && .@buffitem_id != 12209 && .@buffitem_id != 12210 && .@buffitem_id != 12212 &&
+			.@buffitem_id != 12215 && .@buffitem_id != 12216 && .@buffitem_id != 12217 && .@buffitem_id != 12218 &&
+			.@buffitem_id != 12219 && .@buffitem_id != 12220 && .@buffitem_id != 12250 && .@buffitem_id != 12251 &&
+			.@buffitem_id != 12252 && .@buffitem_id != 12253 && .@buffitem_id != 12254 && .@buffitem_id != 12255 &&
+			.@buffitem_id != 12262 && .@buffitem_id != 12263 && .@buffitem_id != 12264 && .@buffitem_id != 12265 &&
+			.@buffitem_id != 12411 && .@buffitem_id != 12412 && .@buffitem_id != 14500 && .@buffitem_id != 14532 &&
+			.@buffitem_id != 14533 && .@buffitem_id != 14534 && .@buffitem_id != 14535 && .@buffitem_id != 14536 &&
+			.@buffitem_id != 14541 && .@buffitem_id != 14542 && .@buffitem_id != 14543 && .@buffitem_id != 14544 &&
+			.@buffitem_id != 14545 && .@buffitem_id != 14592);
+
+			setautoattack("5;0;"+ .@buffitem_id + ";0");
+			goto(buffitems_menu);
+		}
+	}
+	
+	goto(supportive_menu);
+	end;
+
+OnDo2:
+
+	sc_end SC_AUTOATTACK;
+	message strcharinfo(0),"END";
+	end;
+	function	__onoff	{
+		if(getarg(0) == 0)
+			return "^BEBEBE[OFF]^000000";
+		else
+			return "^000088[ON]^000000";
+	}
+}

@@ -1,0 +1,9 @@
+veil,116,109,5	script	Players Online	837,{
+	end;
+OnInit:
+	while (1) {
+		waitingroom "Players Online : "+ getusers(1), 0;
+		sleep 5000; // updates every 5 sec
+		delwaitingroom;
+	}
+}

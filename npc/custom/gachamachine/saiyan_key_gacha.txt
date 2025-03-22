@@ -1,0 +1,189 @@
+veil,65,165,6	script	Saiyan Key Gacha Machine	506,{
+
+	.@name$ = strcharinfo(0);
+    .@i = 0;
+
+    cutin "GACHAWIN_01",2;
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "Greetings, Adventurer";
+    mes "------------------------------";
+    mes "These are amazing costume headgears. I can give you a fair chance on each costume headgears if you like to bet. Sounds good?";
+    next;
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "WARNING!!!!";
+    mes "------------------------------";
+    mes "There's a chance to fail on each roll. And every time you failed, we will deduct a total of ^3355FF "+ F_InsertComma(.costZenyFee)+" Zeny^000000 and ^3355FFx" + .costItemAmount + " " + getitemname(.costItemID) + "^000000 in your account.";
+    mes " ";
+    mes "Do you still want to continue?";
+    next;
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "------------------------------";
+    mes "Pay me ^3355FF "+ F_InsertComma(.costZenyFee)+" Zeny^000000 and ^3355FFx" + .costItemAmount + " " + getitemname(.costItemID) + "^000000 to play my game.";
+    mes " ";
+    mes "You'll get a chance to win these exclusive prizes!";
+    next;
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "Name | Chance ";
+    mes "------------------------------";
+    for(set .@k,0;.@k < getarraysize(.itemID);.@k += 3) {
+        mes "<ITEM>"+getitemname(.itemID[.@k])+"<INFO>"+.itemID[.@k]+"</INFO></ITEM> | ^3355FF" + .itemID[(.@k+1)] + "%^000000";
+    }    
+    mes "and some usable items..";
+    next;
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "------------------------------";
+    mes "So, Adventurer....";
+    mes "Do you wanna gamble?";
+    .@i = select("> Game On!","Wait! I need to pray.");
+
+    switch(.@i) {
+        case 1:goto OnGameOn;
+        case 2:close;end;
+    }
+OnNoItems:
+
+end;
+OnGameOn:
+    next;
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "------------------------------";
+
+    if (Zeny < .costZenyFee || countitem(.costItemID) < .costItemAmount){
+        mes "Sorry Adventurer, you don't have the things I need:";
+        mes " - ^3355FFx" + .costItemAmount + " " + getitemname(.costItemID) + " ^000000";
+        mes " - ^3355FF "+ F_InsertComma(.costZenyFee)+" Zeny^000000";
+        cutin "",255;
+        close;
+    }
+
+    clear;
+
+    mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+    mes "It has been turned on...";
+
+    for (.@j = 1; .@j <= 3; .@j++){
+        for(.@i = 1; .@i < 8; .@i++){
+            cutin "GACHALOOP_0" + .@i,2;
+            sleep2 100;
+        }
+    }
+
+    mes "It's shuffling the prizes...";
+
+    for (.@j = 1; .@j <= 3; .@j++){
+        for(.@i = 1; .@i <= 16; .@i++){
+            cutin "GACHASHUFFLE_" + ((.@i < 10)?"0":"") + .@i,2;
+            sleep2 100;
+        }
+    }
+
+    mes "It's preparing the reward...";
+
+    .@i = 3; //0
+    while(.@i < 3){
+        cutin "GACHAWIN_01",2;
+        sleep2 100;
+        cutin "GACHAWIN_02",2;
+        sleep2 100;
+        cutin "GACHAWIN_03",2;
+        sleep2 100;
+        cutin "GACHAWIN_02",2;
+        sleep2 100;
+        cutin "GACHAWIN_01",2;
+        sleep2 100;
+        .@i++;
+    }
+
+    for(.@i = 1; .@i <= 9; .@i++){
+        cutin "GACHAPRIZE_0" + .@i,2;
+        sleep2 100;
+    }
+
+    .@percent = rand(1,100);
+    setarray .itemRaffle[0],0;
+    setpcblock PCBLOCK_MOVE, true;
+    setpcblock PCBLOCK_COMMANDS, true;
+
+    freeloop(1);
+
+    if(.@percent >= 1 && .@percent <= 100) {
+        for(set .@k,0;.@k < getarraysize(.itemID);.@k += 3) {
+            if(.@percent <= .itemID[.@k+1]) {
+                .itemRaffle[getarraysize(.itemRaffle)] = .itemID[.@k];
+            }
+        }    
+    }
+
+    freeloop(0);
+    setpcblock PCBLOCK_MOVE, false;
+    setpcblock PCBLOCK_COMMANDS, false;
+
+    if (Zeny < .costZenyFee || countitem(.costItemID) < .costItemAmount ){
+        clear;
+        mes "[ ^3355FFSaiyan Key Gacha Machine^000000 ]";
+        mes "Sorry Adventurer, you have to bring the items I need.";
+        cutin "",255;
+        close;
+        end;
+    }
+
+    delitem .costItemID, .costItemAmount;
+    if(.@percent > .mainRewardChance) {
+        .@consoSize = getarraysize(.conso);
+        .@consoRandom = rand(.@consoSize);
+        .@consoItem = .conso[.@consoRandom];
+        getitem .@consoItem,1;
+        message strcharinfo(0),"Sorry you didn't get the premium prize. Better luck next time.";
+        Zeny = Zeny - .costZenyFee;
+        close2;
+        cutin "",255;
+        end;
+    }
+
+    .@rewardSize = getarraysize(.itemRaffle);
+    .@rewardRandom = rand(.@rewardSize);
+    .@rewardItem = .itemRaffle[.@rewardRandom];
+
+    if(getitemname(.@rewardItem) == "null") {
+        message strcharinfo(0),"Ooops.. Sorry you didn't get the premium prize. Better luck next time.";
+        Zeny = Zeny - .costZenyFee;
+        close2;
+        cutin "",255;
+        end;
+    }
+    
+    getitem .@rewardItem,1;
+    Zeny = Zeny - .costZenyFee;
+    announce "[ Gacha Machine ]: Player "+ .@name$ +" obtained  " + getitemname(.@rewardItem) +"",0;
+    message strcharinfo(0),"Wow.. Congrats for getting the premium reward!";
+    cutin "",255;
+end;
+
+OnPCLoadMapEvent:
+    showevent 6,0;
+end;
+
+OnFreePoints:
+OnInit:
+	.costItemID = 7179;
+    .costItemAmount = 5;
+    .costZenyFee = 15000000;
+    .mainRewardChance = 1;
+
+    // Define the rewards and their chances
+    setarray .conso[0],14592,14533,12412,7621,12209,12211,12214,14003,7776;
+
+	// Rare Item Rewards
+    setarray .itemIDS,
+		50005;
+    
+    // Modify itemID array to have different chance values
+    setarray .itemID,
+        50005,1,1;   // 1% chance for item Saiyan Key [1]
+
+    while(1) {
+        showscript "Saiyan Key Gacha Machine", getnpcid(0);
+        sleep 1000;
+    }
+end;
+}

@@ -1,0 +1,23 @@
+-	script	KillAndDies	-1,{
+	OnNPCKillEvent:
+		set .@killer_id, getcharid(0);
+		set .@killer_name, strcharinfo(0);
+		query_sql("SELECT kills FROM pvpm_data WHERE id = " + .@killer_id, .@kills);
+		if (getarraysize(.@kills) == 0) {
+			query_sql("INSERT INTO pvpm_data (id, name, kills) VALUES (" + .@killer_id + ", '" + .@killer_name + "', 1)");
+		} else {
+			query_sql("UPDATE pvpm_data SET kills = kills + 1 WHERE id = " + .@killer_id);
+		}
+		query_sql("UPDATE pvpm_data SET ratio = kills - dies WHERE id = " + .@killer_id);
+		set .@victim_id, getcharid(3);
+		set .@victim_name, strcharinfo(0);
+		query_sql("SELECT dies FROM pvpm_data WHERE id = " + .@victim_id, .@dies);
+		if (getarraysize(.@dies) == 0) {
+			query_sql("INSERT INTO pvpm_data (id, name, dies) VALUES (" + .@victim_id + ", '" + .@victim_name + "', 1)");
+		} else {
+			query_sql("UPDATE pvpm_data SET dies = dies + 1 WHERE id = " + .@victim_id);
+		}
+		query_sql("UPDATE pvpm_data SET ratio = kills - dies WHERE id = " + .@victim_id);
+
+		end;
+}

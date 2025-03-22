@@ -1,0 +1,127 @@
+veil,95,134,4	script	Vote Points Manager	4_M_CRU_HEAD,{
+	function getPoints;
+
+	set .@n$, 			"^1E90FF[Vote Points Manager]^000000";
+	set .@settings, 	1;		// 0 = item, 1 = shop
+	set .@itemReward, 	501;	// Insert an item ID if the above setting is 0
+	set .@convertRate, 	2;		// 2 Vote Points for 1 Red Potion
+	set .vp, 			getPoints(getcharid(3));
+	
+	switch (.@settings) {
+		case 0:
+			mes .@n$;
+			mes "Would you like to convert your "+ .vp +" vote points?";
+			mes "^ff0000The current conversion rate is "+ .@convertRate +" Points for 1 "+ getitemname(.@itemReward) +".";
+			next;
+			menu "^008aff[»]^000000 Yes", L_Convert, "^ff0000[»]^000000 No", -;
+			mes .@n$;
+			mes "See you later.";
+			break;
+		case 1:
+			mes .@n$;
+			mes "You have ^ff0000"+ .vp +"^000000 vote points.";
+			mes "Would you like to visit the shop?";
+			next;
+			menu "^008aff[»]^000000 Yes", -, "^ff0000[»]^000000 No", L_Goodbye;
+			mes .@n$;
+			mes "Enjoy your time in the shop!";
+			callshop "votepoints_shop",1;
+			npcshopattach "votepoints_shop";
+			end;
+	}
+	
+	L_Goodbye:
+		mes .@n$;
+		mes "Goodbye.";
+		close;
+	
+	L_Convert:
+		if (.vp < .@convertRate)
+			goto L_VotePointsTooLow;
+		mes .@n$;
+		mes "How many vote points would you like to convert?";
+		next;
+		menu "All", L_ConvertAll, "Enter Amount", L_ConvertAmount;
+	
+	L_ConvertAmount:
+		input .@convert;
+		
+		if (.@convert > .vp)
+			goto L_VotePointsTooLow;
+		
+		set .vp, ((.vp - .@convert) + (.@convert % .@convertRate));
+		set .@convert, (.@convert / .@convertRate);
+		getitembound .@itemReward, .@convert, 2;
+		query_sql("UPDATE cp_vfp_points SET points = "+ .vp +" WHERE account_id = "+ getcharid(3));
+		
+		mes .@n$;
+		mes "You received "+ .@convert +"x "+ getitemname(.@itemReward) +".";
+		mes "Your current vote points are: "+ .vp;
+		close;
+		
+	L_ConvertAll:
+		set .@convert, (.vp / .@convertRate);
+		set .vp, (.vp % .@convertRate);
+		getitembound .@itemReward, .@convert, 2;
+		query_sql("UPDATE cp_vfp_points SET points = "+ .vp +" WHERE account_id = "+ getcharid(3));
+		
+		mes .@n$;
+		mes "You received "+ .@convert +"x "+ getitemname(.@itemReward) +".";
+		mes "Your current vote points are: "+ .vp;
+		close;
+	
+	L_VotePointsTooLow:
+		mes .@n$;
+		mes "Your vote points are too low. Come back when you have enough vote points.";
+		close;
+	
+	function getPoints {
+		set .@account_id, getarg(0);
+		
+		set .@count, query_sql("SELECT points FROM cp_vfp_points WHERE account_id = "+ .@account_id, .@votepoints);
+		
+		return .@count ? .@votepoints : 0;
+	}
+	
+	OnBuyItem:
+		set .@cost,0;
+		for(set .@i,0; .@i<getarraysize(@bought_nameid); set .@i,.@i+1)
+			for(set .@j,0; .@j<getarraysize(.itemShop); set .@j,.@j+2)
+				if (@bought_nameid[.@i] == .itemShop[.@j]) {
+					set .@cost, .@cost+(.itemShop[.@j+1]*@bought_quantity[.@i]);
+					break;
+				}
+		mes .@n$;
+		if (.@cost > .vp) mes "You don't have enough vote points.";
+		else {
+			for(set .@i,0; .@i<getarraysize(@bought_nameid); set .@i,.@i+1) {
+				getitembound @bought_nameid[.@i], @bought_quantity[.@i], 2;
+				dispbottom "You bought "+@bought_quantity[.@i]+"x "+getitemname(@bought_nameid[.@i])+".";
+			}
+			set .vp, .vp - .@cost;
+			query_sql("UPDATE cp_vfp_points SET points = points - "+ .@cost +" WHERE account_id = "+ getcharid(3));
+			mes .@n$;
+			mes "Transaction completed.";
+			mes "You now have ^ff0000"+ .vp +"^000000 vote points.";
+			emotion ET_SURPRISE;
+		}
+		set .@cost,0;
+		deletearray @bought_nameid[0], getarraysize(@bought_nameid);
+		deletearray @bought_quantity[0], getarraysize(@bought_quantity);
+		close;
+	
+	OnInit:
+		delwaitingroom;
+		waitingroom "Vote Shop", 0;
+		
+		// Shop item configuration
+		// Example: item ID, required points, item ID, required points.
+		setarray .itemShop[0],5283,150,5773,150,5389,100,5325,100,5445,90,5775,90,5594,90,5377,90;
+		
+		npcshopdelitem "votepoints_shop",512;
+		for(set .@i, 0; .@i < getarraysize(.itemShop); set .@i, .@i+2)
+			npcshopadditem "votepoints_shop", .itemShop[.@i], .itemShop[.@i+1];
+	end;
+}
+
+-	shop	votepoints_shop	-1,512:-1

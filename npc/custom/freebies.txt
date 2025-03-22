@@ -1,0 +1,29 @@
+new_1-1,62,117,4	script	Freebies	864,{
+if( !#Freebies ){
+set #Freebies,1;
+mes "Welcome...this is your gift...";
+	getitembound 14592,10,Bound_Account;
+	getitembound 14533,10,Bound_Account;
+	getitembound 12210,10,Bound_Account;
+	getitembound 12211,10,Bound_Account;
+	getitembound 13697,20,Bound_Account;
+	getitembound 13698,20,Bound_Account;
+	getitembound 14003,20,Bound_Account;
+	getitembound 40000,1,Bound_Account;
+	set Zeny,Zeny+5000;
+}else{
+mes "You have claim the Reward already.";
+}
+close;
+
+OnInit:
+waitingroom "F r e e b i e s",0;
+end;
+}
+// --------------------------------------------------
+//	Duplicates:
+// --------------------------------------------------
+new_2-1,62,117,4	duplicate(Freebies)	Freebies#new_2-1	864
+new_3-1,62,117,4	duplicate(Freebies)	Freebies#new_3-1	864
+new_4-1,62,117,4	duplicate(Freebies)	Freebies#new_4-1	864
+new_5-1,62,117,4	duplicate(Freebies)	Freebies#new_5-1	864
