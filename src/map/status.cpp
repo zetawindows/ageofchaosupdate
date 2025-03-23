@@ -13588,20 +13588,19 @@ TIMER_FUNC(status_change_timer){
 	switch(type) {
 	case SC_AUTOATTACK:
 		if( pc_is90overweight(sd)) {
-			status_change_end(&sd->bl, SC_AUTOATTACK);
 			clif_displaymessage(sd->fd, "Auto-Battle Disable - ( You are 90% overweight )");
 			return 0;
 		}
 		if( sd->chatID ) {
-			status_change_end(&sd->bl, SC_AUTOATTACK);
 			clif_displaymessage(sd->fd, "Auto-Battle Disable - ( You are in a chatroom )");
 			return 0;
 		}
-		if( pc_search_inventory(sd,battle_config.feature_battery_1d) <= 1 || pc_search_inventory(sd,battle_config.feature_battery_7d) <= 1 || pc_search_inventory(sd,battle_config.feature_battery_30d) <= 1 ){
-			clif_displaymessage(sd->fd, "You don't have battery or it has expired!");
-			return 0;
-		}
 		if (--(sce->val4) > 0) {
+			if (pc_search_inventory(sd, 50000) < 0 && pc_search_inventory(sd, 50001) < 0 && pc_search_inventory(sd, 50002) < 0 ) {
+				status_change_end(&sd->bl, SC_AUTOATTACK);
+				clif_displaymessage(sd->fd, "You don't have battery or it has expired!");
+				break;
+			}
 			int32 i_ = 0;
 			struct status_data *status = status_get_status_data(sd->bl);
 			time_t last_time = time(nullptr);
