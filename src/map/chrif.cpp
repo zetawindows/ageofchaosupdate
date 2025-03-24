@@ -1668,8 +1668,11 @@ void chrif_parse_ack_vipActive(int32 fd) {
 			status_change_end(&sd->bl, SC_VIPSTATE);
 			sd->storage.max_amount = MIN_STORAGE;
 			sd->special_state.no_gemstone = 0;
-			status_change_end(&sd->bl, SC_AUTOATTACK);
 			clif_displaymessage(sd->fd,msg_txt(sd,438));
+			if(sd->state.autotrade && sd->sc.getSCE(SC_AUTOATTACK)) {
+				status_change_end(&sd->bl, SC_AUTOATTACK);
+				map_quit(sd);
+			}
 		}
 	}
 	// Show info if status changed
